@@ -1,0 +1,183 @@
+/* Clean up duplicate styles from the original panel */
+.stats-panel, .stats-panel:hover, .stats-header, .stats-container, 
+.stat-icon, .stat-content {
+  display: none;
+}
+
+/* Vertical stats panel styling */
+.vertical-stats-panel {
+  position: fixed;
+  top: 50%;
+  left: 1.5rem;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.word-count-icon {
+  width: 32px;
+  height: 32px;
+  color: rgba(0, 0, 0, 0.75);
+  stroke-width: 1.5;
+  transition: all 0.2s ease;
+}
+
+.vertical-stats-panel:hover .word-count-icon {
+  color: #000;
+  transform: translateY(-2px);
+}
+
+/* Vertical word count styling */
+.vertical-word-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  padding-top: 0.75rem;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+}
+
+.vertical-word-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+  line-height: 1;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.vertical-word-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: lowercase;
+  letter-spacing: 1px;
+}
+
+.vertical-stats-panel:hover .vertical-word-value {
+  color: #000;
+}
+
+/* Animation for updating stats */
+@keyframes pulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.7; transform: scale(1); }
+}
+
+.vertical-word-value.updated {
+  animation: pulse 2s ease infinite;
+}
+
+/* Mobile stats toggle button */
+.stats-toggle-button {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: none;
+  cursor: pointer;
+  z-index: 20;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stats-toggle-button:hover {
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.stats-toggle-button .word-count-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile stats panel */
+.mobile-stats-panel {
+  display: none;
+  position: fixed;
+  bottom: 5rem;
+  right: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 19;
+  width: auto;
+  min-width: 120px;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.mobile-stats-panel.active {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.mobile-word-count {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.mobile-word-count .word-count-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.mobile-word-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+  line-height: 1.2;
+}
+
+.mobile-word-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: lowercase;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .vertical-stats-panel {
+    left: 1rem;
+  }
+  
+  .vertical-word-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .vertical-stats-panel {
+    display: none;
+  }
+  
+  .stats-toggle-button {
+    display: flex;
+  }
+  
+  .mobile-stats-panel {
+    display: block;
+  }
+} 
