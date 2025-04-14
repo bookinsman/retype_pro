@@ -160,11 +160,11 @@
       });
     }
   }
-})({"7KwkS":[function(require,module,exports,__globalThis) {
+})({"60S5F":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 1234;
+var HMR_SERVER_PORT = 60762;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -33213,7 +33213,7 @@ $RefreshReg$(_c2, "WisdomMinimalLanding");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/TypeWriter":"h7DK3","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"d3GZa":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"d3GZa":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$b71d = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$b71d.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -45485,69 +45485,7 @@ function resolveElements(elements, scope, selectorCache) {
      */ return Array.from(elements || []);
 }
 
-},{"../../../utils/errors.mjs":"lD57e","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"h7DK3":[function(require,module,exports,__globalThis) {
-var $parcel$ReactRefreshHelpers$8dd3 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-$parcel$ReactRefreshHelpers$8dd3.init();
-var prevRefreshReg = globalThis.$RefreshReg$;
-var prevRefreshSig = globalThis.$RefreshSig$;
-$parcel$ReactRefreshHelpers$8dd3.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _react = require("react");
-var _reactDefault = parcelHelpers.interopDefault(_react);
-var _s = $RefreshSig$();
-const TypeWriter = ({ text, delay = 50, onComplete, className = '' })=>{
-    _s();
-    const [displayText, setDisplayText] = (0, _react.useState)('');
-    const [currentIndex, setCurrentIndex] = (0, _react.useState)(0);
-    (0, _react.useEffect)(()=>{
-        if (currentIndex < text.length) {
-            const timer = setTimeout(()=>{
-                setDisplayText((prev)=>prev + text[currentIndex]);
-                setCurrentIndex((prev)=>prev + 1);
-            }, delay);
-            return ()=>clearTimeout(timer);
-        } else if (onComplete) onComplete();
-    }, [
-        currentIndex,
-        delay,
-        onComplete,
-        text
-    ]);
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-        className: className,
-        children: [
-            displayText,
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                className: "inline-block w-[2px] h-[1em] bg-gray-800 opacity-75 animate-pulse ml-[2px]",
-                children: "\xa0"
-            }, void 0, false, {
-                fileName: "src/components/TypeWriter.tsx",
-                lineNumber: 35,
-                columnNumber: 7
-            }, undefined)
-        ]
-    }, void 0, true, {
-        fileName: "src/components/TypeWriter.tsx",
-        lineNumber: 33,
-        columnNumber: 5
-    }, undefined);
-};
-_s(TypeWriter, "hIUgadE6edYynGHHGmHPDKhBDus=");
-_c = TypeWriter;
-exports.default = TypeWriter;
-var _c;
-$RefreshReg$(_c, "TypeWriter");
-
-  $parcel$ReactRefreshHelpers$8dd3.postlude(module);
-} finally {
-  globalThis.$RefreshReg$ = prevRefreshReg;
-  globalThis.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"5PMFt":[function(require,module,exports,__globalThis) {
+},{"../../../utils/errors.mjs":"lD57e","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"5PMFt":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$6597 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$6597.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -62153,6 +62091,6 @@ exports.default = withLoadingAnimation;
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["7KwkS","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:1234")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["60S5F","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:60762")
 
 //# sourceMappingURL=retype_pro.6efbc4f8.js.map
