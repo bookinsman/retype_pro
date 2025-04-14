@@ -265,10 +265,15 @@ export default function WisdomMinimalLanding() {
           transition={{ duration: 0.5 }}
           className="mb-0"
         >
-          <p className="text-sm uppercase tracking-widest text-gray-500 mb-1">VISO PERRAŠYTA ŽODŽIŲ</p>
-          <p className="text-6xl font-light text-gray-900 font-mono mb-2">
+          <p className="text-sm uppercase tracking-widest text-gray-500 mb-2 font-inter">VISO PERRAŠYTA ŽODŽIŲ</p>
+          <motion.p 
+            className="text-7xl font-light text-gray-900 font-mono mb-2 tabular-nums tracking-tight"
+            initial={{ scale: 0.95, opacity: 0.8 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             {formattedCount}
-          </p>
+          </motion.p>
         </motion.div>
       </motion.div>
 
@@ -285,6 +290,13 @@ export default function WisdomMinimalLanding() {
               placeholder="Įveskite prieigos kodą..."
               value={accessCode}
               onChange={handleAccessCodeChange}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAccess();
+                }
+              }}
+              onFocus={(e) => e.target.placeholder = ''}
+              onBlur={(e) => e.target.placeholder = 'Įveskite prieigos kodą...'}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-gray-700 font-lora text-center"
             />
           </div>
@@ -303,7 +315,7 @@ export default function WisdomMinimalLanding() {
             className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-cormorant text-base py-2"
             onClick={handleAccess}
           >
-            Atrasti prieigą
+            Prieiga
           </Button>
         </div>
       </motion.div>
@@ -318,20 +330,14 @@ export default function WisdomMinimalLanding() {
             <span className="text-2xl">📜</span> 
             Perrašymo filosofija
           </h2>
-          <div className="text-md font-baskerville leading-relaxed text-gray-800">
-            {typingComplete ? (
-              staticText
-            ) : shouldStartTyping ? (
-              <TypeWriter 
-                text={staticText} 
-                delay={30} 
-                onComplete={handleTypingComplete}
-                className="inline-block"
-              />
-            ) : (
-              <span className="opacity-80">{staticText}</span>
-            )}
-          </div>
+          <motion.div 
+            className="text-md font-baskerville leading-relaxed text-gray-800"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {staticText}
+          </motion.div>
         </div>
       </Section>
 

@@ -32331,8 +32331,6 @@ var _framerMotion = require("framer-motion");
 var _react = require("react");
 var _reactDefault = parcelHelpers.interopDefault(_react);
 var _reactRouterDom = require("react-router-dom");
-var _typeWriter = require("../components/TypeWriter");
-var _typeWriterDefault = parcelHelpers.interopDefault(_typeWriter);
 var _slideInText = require("../components/SlideInText");
 var _slideInTextDefault = parcelHelpers.interopDefault(_slideInText);
 var _loadingAnimation = require("../components/LoadingAnimation");
@@ -32699,15 +32697,27 @@ function WisdomMinimalLanding() {
                         className: "mb-0",
                         children: [
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                                className: "text-sm uppercase tracking-widest text-gray-500 mb-1",
+                                className: "text-sm uppercase tracking-widest text-gray-500 mb-2 font-inter",
                                 children: "VISO PERRA\u0160YTA \u017DOD\u017DI\u0172"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
                                 lineNumber: 268,
                                 columnNumber: 11
                             }, this),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                                className: "text-6xl font-light text-gray-900 font-mono mb-2",
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).p, {
+                                className: "text-7xl font-light text-gray-900 font-mono mb-2 tabular-nums tracking-tight",
+                                initial: {
+                                    scale: 0.95,
+                                    opacity: 0.8
+                                },
+                                animate: {
+                                    scale: 1,
+                                    opacity: 1
+                                },
+                                transition: {
+                                    duration: 0.5,
+                                    ease: "easeOut"
+                                },
                                 children: formattedCount
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
@@ -32743,15 +32753,20 @@ function WisdomMinimalLanding() {
                                 placeholder: "\u012Eveskite prieigos kod\u0105...",
                                 value: accessCode,
                                 onChange: handleAccessCodeChange,
+                                onKeyDown: (e)=>{
+                                    if (e.key === 'Enter') handleAccess();
+                                },
+                                onFocus: (e)=>e.target.placeholder = '',
+                                onBlur: (e)=>e.target.placeholder = "\u012Eveskite prieigos kod\u0105...",
                                 className: "w-full border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-gray-700 font-lora text-center"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 283,
+                                lineNumber: 288,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 282,
+                            lineNumber: 287,
                             columnNumber: 11
                         }, this),
                         error && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).p, {
@@ -32765,7 +32780,7 @@ function WisdomMinimalLanding() {
                             children: error
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 292,
+                            lineNumber: 304,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
@@ -32773,21 +32788,21 @@ function WisdomMinimalLanding() {
                             size: "md",
                             className: "w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-cormorant text-base py-2",
                             onClick: handleAccess,
-                            children: "Atrasti prieig\u0105"
+                            children: "Prieiga"
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 300,
+                            lineNumber: 312,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 281,
+                    lineNumber: 286,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 276,
+                lineNumber: 281,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Section, {
@@ -32805,49 +32820,43 @@ function WisdomMinimalLanding() {
                                     children: "\uD83D\uDCDC"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 318,
+                                    lineNumber: 330,
                                     columnNumber: 13
                                 }, this),
                                 "Perra\u0161ymo filosofija"
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 317,
+                            lineNumber: 329,
                             columnNumber: 11
                         }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
                             className: "text-md font-baskerville leading-relaxed text-gray-800",
-                            children: typingComplete ? staticText : shouldStartTyping ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _typeWriterDefault.default), {
-                                text: staticText,
-                                delay: 30,
-                                onComplete: handleTypingComplete,
-                                className: "inline-block"
-                            }, void 0, false, {
-                                fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 325,
-                                columnNumber: 15
-                            }, this) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                                className: "opacity-80",
-                                children: staticText
-                            }, void 0, false, {
-                                fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 332,
-                                columnNumber: 15
-                            }, this)
+                            initial: {
+                                opacity: 0
+                            },
+                            animate: {
+                                opacity: 1
+                            },
+                            transition: {
+                                duration: 0.8,
+                                ease: "easeOut"
+                            },
+                            children: staticText
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 321,
+                            lineNumber: 333,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 316,
+                    lineNumber: 328,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 311,
+                lineNumber: 323,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Section, {
@@ -32906,27 +32915,27 @@ function WisdomMinimalLanding() {
                                         children: "Fokuso re\u017Eimas"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 389,
+                                        lineNumber: 395,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
                                         children: "K\u016Brybinis re\u017Eimas"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 390,
+                                        lineNumber: 396,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
                                         children: "Atminties re\u017Eimas"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 391,
+                                        lineNumber: 397,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 388,
+                                lineNumber: 394,
                                 columnNumber: 17
                             }, this)
                         }
@@ -32938,22 +32947,22 @@ function WisdomMinimalLanding() {
                                 children: feature.content
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 398,
+                                lineNumber: 404,
                                 columnNumber: 17
                             }, this) : feature.content
                         }, index, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 396,
+                            lineNumber: 402,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 344,
+                    lineNumber: 350,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 338,
+                lineNumber: 344,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Section, {
@@ -32982,7 +32991,7 @@ function WisdomMinimalLanding() {
                             children: "\uD83D\uDE80 Prad\u0117kite savo transformacijos kelion\u0119"
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 426,
+                            lineNumber: 432,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("ul", {
@@ -32994,14 +33003,14 @@ function WisdomMinimalLanding() {
                                             children: "1."
                                         }, void 0, false, {
                                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                            lineNumber: 428,
+                                            lineNumber: 434,
                                             columnNumber: 17
                                         }, this),
                                         " Intuityvi s\u0105saja \u2013 pritaikyta tiek kompiuteriams, tiek mobiliesiems \u012Frenginiams"
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 428,
+                                    lineNumber: 434,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
@@ -33010,14 +33019,14 @@ function WisdomMinimalLanding() {
                                             children: "2."
                                         }, void 0, false, {
                                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                            lineNumber: 429,
+                                            lineNumber: 435,
                                             columnNumber: 17
                                         }, this),
                                         " Progresas \u2013 individualiai pritaikytas j\u016Bs\u0173 mokymosi tempui"
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 429,
+                                    lineNumber: 435,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
@@ -33026,20 +33035,20 @@ function WisdomMinimalLanding() {
                                             children: "3."
                                         }, void 0, false, {
                                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                            lineNumber: 430,
+                                            lineNumber: 436,
                                             columnNumber: 17
                                         }, this),
                                         " Integruoti garsai \u2013 skirti skatinti gil\u0173 mokymosi re\u017Eim\u0105"
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 430,
+                                    lineNumber: 436,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 427,
+                            lineNumber: 433,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -33058,23 +33067,23 @@ function WisdomMinimalLanding() {
                                 children: "Atrasti prieig\u0105 dabar"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 437,
+                                lineNumber: 443,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 432,
+                            lineNumber: 438,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 413,
+                    lineNumber: 419,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 407,
+                lineNumber: 413,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("footer", {
@@ -33087,7 +33096,7 @@ function WisdomMinimalLanding() {
                             children: "\xa9 2070 I\u0161minties Kontinuumas"
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 452,
+                            lineNumber: 458,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -33098,14 +33107,14 @@ function WisdomMinimalLanding() {
                                     children: "Tik tiems, kurie \u017Eino"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 454,
+                                    lineNumber: 460,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                                     className: "w-[1px] h-3 bg-gray-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 455,
+                                    lineNumber: 461,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("a", {
@@ -33114,24 +33123,24 @@ function WisdomMinimalLanding() {
                                     children: "Privatumo politika"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 456,
+                                    lineNumber: 462,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 453,
+                            lineNumber: 459,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 451,
+                    lineNumber: 457,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 450,
+                lineNumber: 456,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).button, {
@@ -33168,17 +33177,17 @@ function WisdomMinimalLanding() {
                         d: "M18 15l-6-6-6 6"
                     }, void 0, false, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 485,
+                        lineNumber: 491,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 474,
+                    lineNumber: 480,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 462,
+                lineNumber: 468,
                 columnNumber: 7
             }, this)
         ]
@@ -46231,12 +46240,12 @@ function ArticlePage() {
                     className: "flex justify-center items-center space-x-6 md:space-x-8 py-1 px-4 text-xs md:text-sm font-medium",
                     children: [
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                            className: `text-gray-600 hover:text-yellow-500 transition-colors duration-200 relative group px-3 py-1 rounded-md ${isStatsExpanded ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-50'}`,
+                            className: `text-gray-600 hover:text-black transition-colors duration-300 relative group px-4 py-2 ${isStatsExpanded ? 'font-normal' : 'font-light'}`,
                             onClick: toggleStatsExpansion,
                             children: [
                                 "Pasiekimai",
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                    className: `absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400 transform ${isStatsExpanded ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'} transition-transform duration-200`
+                                    className: `absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 ${isStatsExpanded ? 'scale-x-100' : ''} transition-transform duration-300`
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
                                     lineNumber: 382,
@@ -46249,11 +46258,11 @@ function ArticlePage() {
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                            className: "text-gray-600 hover:text-yellow-500 transition-colors duration-200 relative group px-3 py-1 rounded-md bg-blue-50",
+                            className: "text-gray-600 hover:text-black transition-colors duration-300 relative group px-4 py-2 font-light",
                             children: [
                                 "Taisykl\u0117s",
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                    className: "absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                                    className: "absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
                                     lineNumber: 386,
@@ -46266,11 +46275,11 @@ function ArticlePage() {
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                            className: "text-gray-600 hover:text-yellow-500 transition-colors duration-200 relative group px-3 py-1 rounded-md bg-green-50",
+                            className: "text-gray-600 hover:text-black transition-colors duration-300 relative group px-4 py-2 font-light",
                             children: [
                                 "Tikslas",
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                    className: "absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                                    className: "absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
                                     lineNumber: 390,

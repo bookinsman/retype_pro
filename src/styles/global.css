@@ -116,10 +116,21 @@ p {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  p {
+    font-size: 1.125rem;
+    line-height: 1.7;
+  }
+  
+  .article-quote,
+  .article-highlight {
+    font-size: 1.125rem;
+  }
+
   .hide-mobile {
     display: none;
   }
 }
+/* Remove the extra closing brace that was causing the at-rule error */
 
 @media (min-width: 769px) {
   .hide-desktop {

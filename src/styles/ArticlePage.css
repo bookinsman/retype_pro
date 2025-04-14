@@ -78,6 +78,14 @@ h1, h2, h3 {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .text-responsive {
-    font-size: clamp(1rem, 4vw, 1.25rem);
+    font-size: clamp(1.125rem, 4vw, 1.35rem);
   }
-} 
+  
+  .font-playfair,
+  .font-cormorant,
+  .font-lora,
+  .font-baskerville {
+    font-size: 1.125rem;
+    line-height: 1.7;
+  }
+}

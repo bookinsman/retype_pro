@@ -375,19 +375,19 @@ export default function ArticlePage() {
       <div className="w-full max-w-6xl mb-6">
         <div className="flex justify-center items-center space-x-6 md:space-x-8 py-1 px-4 text-xs md:text-sm font-medium">
           <button 
-            className={`text-gray-600 hover:text-yellow-500 transition-colors duration-200 relative group px-3 py-1 rounded-md ${isStatsExpanded ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-50'}`}
+            className={`text-gray-600 hover:text-black transition-colors duration-300 relative group px-4 py-2 ${isStatsExpanded ? 'font-normal' : 'font-light'}`}
             onClick={toggleStatsExpansion}
           >
             Pasiekimai
-            <div className={`absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400 transform ${isStatsExpanded ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'} transition-transform duration-200`}></div>
+            <div className={`absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 ${isStatsExpanded ? 'scale-x-100' : ''} transition-transform duration-300`}></div>
           </button>
-          <button className="text-gray-600 hover:text-yellow-500 transition-colors duration-200 relative group px-3 py-1 rounded-md bg-blue-50">
+          <button className="text-gray-600 hover:text-black transition-colors duration-300 relative group px-4 py-2 font-light">
             Taisyklės
-            <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></div>
+            <div className="absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
           </button>
-          <button className="text-gray-600 hover:text-yellow-500 transition-colors duration-200 relative group px-3 py-1 rounded-md bg-green-50">
+          <button className="text-gray-600 hover:text-black transition-colors duration-300 relative group px-4 py-2 font-light">
             Tikslas
-            <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></div>
+            <div className="absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
           </button>
         </div>
       </div>
