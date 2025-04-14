@@ -4,6 +4,11 @@ import { motion } from 'framer-motion';
 import { useWeeklyStats } from '../hooks/useWeeklyStats';
 import { dayNames } from '../services/weeklyStatsService';
 
+// Props interface for the component
+interface WeeklyPerformanceChartProps {
+  refreshKey?: number;
+}
+
 // Chart options for minimalistic look
 const chartOptions = {
   responsive: true,
@@ -50,7 +55,7 @@ const chartOptions = {
   }
 };
 
-export default function WeeklyPerformanceChart() {
+export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerformanceChartProps) {
   const { 
     weeklyStats, 
     loading, 
@@ -60,9 +65,17 @@ export default function WeeklyPerformanceChart() {
     nextWeek, 
     currentWeek,
     currentMonthName, 
-    currentYear 
+    currentYear,
+    refreshStats 
   } = useWeeklyStats();
   
+  // Refresh stats when refreshKey changes
+  React.useEffect(() => {
+    if (refreshKey > 0) {
+      refreshStats();
+    }
+  }, [refreshKey, refreshStats]);
+
   // If still loading or there's an error, show placeholder
   if (loading) {
     return <div className="h-48 bg-gray-100 animate-pulse rounded-lg"></div>;

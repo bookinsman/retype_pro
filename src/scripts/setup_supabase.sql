@@ -1,86 +1,148 @@
--- This SQL script sets up the tables needed for the application in Supabase
--- Run this in the SQL Editor of your Supabase project
+-- Initial schema for the Retyping Platform
 
--- Content Sets Table
-CREATE TABLE IF NOT EXISTS content_sets (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  subtitle TEXT,
-  status TEXT NOT NULL CHECK (status IN ('active', 'inactive')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- Enable UUID extension for generating UUIDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ==============================
+-- Word Entry Logs
+-- ==============================
+CREATE TABLE word_logs (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL,
+  word_count int NOT NULL,
+  created_at timestamp DEFAULT now()
 );
 
--- Content Paragraphs Table
-CREATE TABLE IF NOT EXISTS content_paragraphs (
-  id TEXT PRIMARY KEY,
-  content_set_id TEXT NOT NULL REFERENCES content_sets(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
-  "order" INTEGER NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- ==============================
+-- Daily Summary for Weekly Views
+-- ==============================
+CREATE TABLE word_daily_summary (
+  user_id uuid,
+  date date,
+  total_words int,
+  PRIMARY KEY (user_id, date)
+);
+
+-- ==============================
+-- Access Codes for Authentication
+-- ==============================
+CREATE TABLE access_codes (
+  code text PRIMARY KEY,
+  code_type text CHECK (code_type IN ('physical', 'digital')),
+  user_id uuid, -- nullable until assigned
+  is_used boolean DEFAULT false,
+  used_at timestamp
+);
+
+-- ==============================
+-- Content Sets and Paragraphs
+-- ==============================
+CREATE TABLE content_sets (
+  id text PRIMARY KEY,
+  title text NOT NULL,
+  subtitle text,
+  status text DEFAULT 'active',
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
+);
+
+CREATE TABLE paragraphs (
+  id text PRIMARY KEY,
+  content_set_id text REFERENCES content_sets(id) ON DELETE CASCADE,
+  content text NOT NULL,
+  order_index int NOT NULL,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
 );
 
 -- Create index for faster lookups
-CREATE INDEX IF NOT EXISTS idx_paragraphs_content_set_id ON content_paragraphs(content_set_id);
+CREATE INDEX idx_paragraphs_content_set_id ON paragraphs(content_set_id);
 
--- Content Wisdom Sections Table
-CREATE TABLE IF NOT EXISTS content_wisdom_sections (
-  id TEXT PRIMARY KEY,
-  content_set_id TEXT NOT NULL REFERENCES content_sets(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('quote', 'didYouKnow', 'recommendations', 'question')),
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE wisdom_sections (
+  id text PRIMARY KEY,
+  content_set_id text REFERENCES content_sets(id) ON DELETE CASCADE,
+  type text CHECK (type IN ('quote')), -- Only quote type is allowed
+  title text NOT NULL,
+  content text NOT NULL,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
 );
 
 -- Create index for faster lookups
-CREATE INDEX IF NOT EXISTS idx_wisdom_content_set_id ON content_wisdom_sections(content_set_id);
+CREATE INDEX idx_wisdom_content_set_id ON wisdom_sections(content_set_id);
 
--- User Progress Table
-CREATE TABLE IF NOT EXISTS user_progress (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  content_id TEXT NOT NULL,
-  content_type TEXT NOT NULL CHECK (content_type IN ('paragraph', 'wisdom')),
-  completed BOOLEAN NOT NULL DEFAULT false,
-  completed_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- User Progress Table - Works with localStorage user_id
+CREATE TABLE user_progress (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL,  -- This will store our localStorage generated user_id
+  content_id text NOT NULL,
+  content_type text NOT NULL CHECK (content_type IN ('paragraph', 'wisdom')),
+  completed boolean NOT NULL DEFAULT false,
+  completed_at timestamp,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
 );
 
 -- Create indexes for faster lookups
-CREATE INDEX IF NOT EXISTS idx_progress_user_id ON user_progress(user_id);
-CREATE INDEX IF NOT EXISTS idx_progress_content ON user_progress(content_id, content_type);
+CREATE INDEX idx_progress_user_id ON user_progress(user_id);
+CREATE INDEX idx_progress_content ON user_progress(content_id, content_type);
 
--- User Stats Table
-CREATE TABLE IF NOT EXISTS user_stats (
-  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  words INTEGER NOT NULL DEFAULT 0,
-  texts INTEGER NOT NULL DEFAULT 0,
-  time_spent_seconds INTEGER NOT NULL DEFAULT 0,
-  speed INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- User Stats Table (for total stats)
+CREATE TABLE user_stats (
+  user_id uuid PRIMARY KEY,
+  words integer NOT NULL DEFAULT 0,
+  texts integer NOT NULL DEFAULT 0,
+  time_spent_seconds integer NOT NULL DEFAULT 0,
+  speed integer NOT NULL DEFAULT 0,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
 );
 
--- Daily User Stats Table
-CREATE TABLE IF NOT EXISTS user_daily_stats (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  date DATE NOT NULL,
-  words INTEGER NOT NULL DEFAULT 0,
-  texts INTEGER NOT NULL DEFAULT 0,
-  time_spent_seconds INTEGER NOT NULL DEFAULT 0,
-  speed INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- Daily User Stats Table (for daily stats)
+CREATE TABLE user_daily_stats (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL,
+  date date NOT NULL,
+  total_words integer NOT NULL DEFAULT 0,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now(),
   UNIQUE(user_id, date)
 );
 
 -- Create index for faster lookups
-CREATE INDEX IF NOT EXISTS idx_daily_stats_user_date ON user_daily_stats(user_id, date);
+CREATE INDEX idx_daily_stats_user_date ON user_daily_stats(user_id, date);
+
+-- ==============================
+-- Insert sample access codes
+-- ==============================
+INSERT INTO access_codes (code, code_type, is_used)
+VALUES 
+  ('PH123456', 'physical', false),
+  ('PH123457', 'physical', false),
+  ('DG123456', 'digital', false),
+  ('DG123457', 'digital', false);
+
+-- ==============================
+-- Insert sample content set with paragraphs and wisdom section
+-- ==============================
+INSERT INTO content_sets (id, title, subtitle)
+VALUES ('laisves-vejas', 'Laisvės vėjas:', 'politinė ir socialinė oro reikšmė');
+
+-- Insert paragraphs
+INSERT INTO paragraphs (id, content_set_id, content, order_index)
+VALUES
+  ('p1', 'laisves-vejas', 'Kai žmonės iškovoja laisvę, dažnai sakoma: "tarsi galėčiau pagaliau įkvėpti". Kvėpavimas tampa ne tik fiziologiniu veiksmu, bet simboline būsena – gyventi be baimės.', 1),
+  ('p2', 'laisves-vejas', 'Tačiau ne visi gali laisvai kvėpuoti – pažodžiui ir perkeltine prasme. Miestai pilni taršos. Šalys – be žodžio laisvės. Kvėpavimas ir teisė laisvai reikšti mintis – abu gali būti atimti.', 2),
+  ('p3', 'laisves-vejas', 'Laisvė yra kaip oras – jos nepastebi, kol jos netenki. Todėl tik brandi visuomenė saugo ne tik fizinę oro švarą, bet ir idėjų erdvę, kurioje gali laisvai kvėpuoti kiekvienas.', 3),
+  ('p4', 'laisves-vejas', 'Per pasaulį nuvilnijusios revoliucijos nešė plakatais žodžius, bet jų esmė slypėjo ore – ore, kuris alsavo pasipriešinimu. Kvėpavimas buvo lyg sinchronizuota malda – viena tauta, vienas ritmas.', 4),
+  ('p5', 'laisves-vejas', 'Tačiau laisvė dažnai painiojama su chaosu. Kai kas, gavęs oro, pasirenka jį naudoti kitiems atimti. Kvėpuoti laisvai reiškia ne daryti bet ką, o leisti kitiems kvėpuoti šalia tavęs.', 5),
+  ('p6', 'laisves-vejas', 'Tik tada, kai suvoki, jog tavo kvėpavimas susijęs su šalia esančio žmogaus oru – tiek tiesiogiai, tiek simboliškai – tampi tikru laisvės kūrėju.', 6),
+  ('p7', 'laisves-vejas', 'Oras – nematomas, bet gyvybiškai svarbus. Kaip ir laisvė. Abu reikia saugoti. Abu reikia gerbti. Ir abu galima prarasti, jei nustosime jais rūpintis.', 7);
+
+-- Insert wisdom section - Only quote type
+INSERT INTO wisdom_sections (id, content_set_id, type, title, content)
+VALUES
+  ('w1', 'laisves-vejas', 'quote', 'Išmintis', 'Pirmas politinis šūkis, kuriame buvo paminėtas kvėpavimas, gimė Prancūzijos revoliucijos metu: "La liberté ou l''asphyxie" („Laisvė arba uždusimas").');
 
 -- Create or replace the updated_at function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -97,13 +159,13 @@ BEFORE UPDATE ON content_sets
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_content_paragraphs_updated_at
-BEFORE UPDATE ON content_paragraphs
+CREATE TRIGGER update_paragraphs_updated_at
+BEFORE UPDATE ON paragraphs
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_content_wisdom_sections_updated_at
-BEFORE UPDATE ON content_wisdom_sections
+CREATE TRIGGER update_wisdom_sections_updated_at
+BEFORE UPDATE ON wisdom_sections
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
 
@@ -120,62 +182,4 @@ EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_user_daily_stats_updated_at
 BEFORE UPDATE ON user_daily_stats
 FOR EACH ROW
-EXECUTE PROCEDURE update_updated_at_column();
-
--- Row Level Security
--- Enable RLS
-ALTER TABLE content_sets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE content_paragraphs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE content_wisdom_sections ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_stats ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_daily_stats ENABLE ROW LEVEL SECURITY;
-
--- Policies for content_sets (everyone can read, only authenticated admins can write)
-CREATE POLICY "Anyone can read content_sets"
-  ON content_sets FOR SELECT
-  USING (true);
-
--- Policies for content_paragraphs (everyone can read, only authenticated admins can write)
-CREATE POLICY "Anyone can read content_paragraphs"
-  ON content_paragraphs FOR SELECT
-  USING (true);
-
--- Policies for content_wisdom_sections (everyone can read, only authenticated admins can write)
-CREATE POLICY "Anyone can read content_wisdom_sections"
-  ON content_wisdom_sections FOR SELECT
-  USING (true);
-
--- Policies for user_progress (users can only access their own data)
-CREATE POLICY "Users can manage their own progress"
-  ON user_progress FOR ALL
-  USING (auth.uid() = user_id);
-
--- Policies for user_stats (users can only access their own data)
-CREATE POLICY "Users can manage their own stats"
-  ON user_stats FOR ALL
-  USING (auth.uid() = user_id);
-
--- Policies for user_daily_stats (users can only access their own data)
-CREATE POLICY "Users can manage their own daily stats"
-  ON user_daily_stats FOR ALL
-  USING (auth.uid() = user_id);
-
--- Sample data for testing (uncomment to use)
-/*
--- Insert a sample content set
-INSERT INTO content_sets (id, title, subtitle, status)
-VALUES ('breathing-science', 'Kvėpavimo mokslas', 'kaip oras keičia kūną ir protą', 'active');
-
--- Insert sample paragraphs
-INSERT INTO content_paragraphs (id, content_set_id, content, "order")
-VALUES 
-('p1', 'breathing-science', 'Kvėpavimas yra labiausiai pirminis ir būtinas mūsų fiziologinių procesų. Kiekvieną minutę įkvepiame ir iškvepiame apie 12-16 kartų, dažnai to net nepastebėdami. Tačiau už šio automatinio veiksmo slypi sudėtinga sistema, kuri ne tik aprūpina organizmą deguonimi, bet ir stipriai veikia mūsų nervų sistemą, emocijas ir bendrą savijautą.', 1),
-('p2', 'breathing-science', 'Žmogaus plaučiai yra neįtikėtinai efektyvūs organai. Jie sudaryti iš maždaug 300 milijonų alveolių – mažyčių oro maišelių, kurių bendras paviršiaus plotas prilygsta teniso aikštelei. Šiame plote vyksta dujų apykaita: deguonis patenka į kraują, o anglies dioksidas pašalinamas. Būtent dėl šios priežasties taisyklingas kvėpavimas yra toks svarbus mūsų organizmui.', 2);
-
--- Insert sample wisdom sections
-INSERT INTO content_wisdom_sections (id, content_set_id, type, title, content)
-VALUES 
-('w1', 'breathing-science', 'quote', 'Išmintis', 'Kvėpavimas yra tiltas, jungiantis gyvenimą su sąmone, jungiantis kūną su mintimis. Kai kvėpavimas tampa netvarkingu, protas tampa sutrikęs, bet kai kvėpavimas ramus, protas irgi nurimsta. - Thich Nhat Hanh'),
-('w2', 'breathing-science', 'didYouKnow', 'Ar žinojai?', 'Vidutinis suaugęs žmogus per dieną įkvepia ir iškvepia apie 20,000 kartų. Deguonis, kurį gauname, keliauja į raudonuosius kraujo kūnelius per hemoglobiną ir yra pernešamas į kiekvieną mūsų kūno ląstelę. Be deguonies, smegenų ląstelės pradėtų mirti per 5 minutes.');
-*/ 
+EXECUTE PROCEDURE update_updated_at_column(); 

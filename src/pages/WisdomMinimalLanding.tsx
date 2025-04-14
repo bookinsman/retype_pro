@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import TypeWriter from "../components/TypeWriter";
 import SlideInText from "../components/SlideInText";
 import LoadingAnimation from "../components/LoadingAnimation";
+import { validateAccessCode } from "../services/supabaseClient";
 
 // Common animation variants to reuse - memoize these to reduce object creation
 const fadeIn = {
@@ -123,13 +124,27 @@ export default function WisdomMinimalLanding() {
     setAccessCode(e.target.value);
   }, []);
 
-  const handleAccess = useCallback(() => {
-    // For demo purposes, let's use a simple code "demo123"
-    if (accessCode === "demo123") {
-      localStorage.setItem('auth_token', 'demo_token');
-      navigate('/article');
-    } else {
-      setError("Neteisingas kodas. Bandykite dar kartą.");
+  const handleAccess = useCallback(async () => {
+    if (!accessCode.trim()) {
+      setError("Įveskite prieigos kodą.");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    try {
+      const result = await validateAccessCode(accessCode);
+      
+      if (result.success) {
+        // Redirect to article page on success
+        navigate('/article');
+      } else {
+        // Show error message
+        setError(result.error || "Neteisingas kodas. Bandykite dar kartą.");
+        setTimeout(() => setError(""), 3000);
+      }
+    } catch (error) {
+      console.error('Error validating access code:', error);
+      setError("Serverio klaida. Bandykite vėliau.");
       setTimeout(() => setError(""), 3000);
     }
   }, [accessCode, navigate]);

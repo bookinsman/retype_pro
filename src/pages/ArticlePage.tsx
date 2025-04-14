@@ -4,10 +4,11 @@ import '../styles/ArticlePage.css';
 import StatsPanel from '../components/StatsPanel';
 import AudioPlayer from '../components/AudioPlayer';
 import { getUserStats, getTodayStats, trackCompletedParagraph, trackTimeSpent, formatTime } from '../services/statsService';
-import { QuoteIcon, LightBulbIcon, BookOpenIcon, QuestionIcon } from '../components/Icons';
+import { QuoteIcon } from '../components/Icons';
 import { normalizeChar } from '../utils/characterUtils';
 import WeeklyPerformanceChart from '../components/WeeklyPerformanceChart';
 import TotalStats from '../components/TotalStats';
+import DailyStats from '../components/DailyStats';
 import { getCurrentContent, completeParagraph, completeWisdomSection, isContentSetCompleted, ContentSet, Paragraph, WisdomSection } from '../services/contentService';
 import LoadingAnimation from '../components/LoadingAnimation';
 import {
@@ -89,7 +90,7 @@ export default function ArticlePage() {
   
   // Check if all content is completed (7 paragraphs and wisdom section)
   const allContentCompleted = useMemo(() => {
-    if (!contentSet) return false;
+    if (!contentSet || !contentSet.paragraphs || !contentSet.wisdomSections) return false;
     
     const allParagraphsCompleted = contentSet.paragraphs.every(p => p.completed);
     const wisdomSectionCompleted = contentSet.wisdomSections.length > 0 && contentSet.wisdomSections[0].completed;
@@ -101,6 +102,51 @@ export default function ArticlePage() {
   const [stats, setStats] = useState({
     words: 0
   });
+
+  // Add refresh key for stats components
+  const [statsRefreshKey, setStatsRefreshKey] = useState(0);
+
+  // Auto-save typing progress
+  useEffect(() => {
+    if (activeIndex !== null && contentSet && contentSet.paragraphs && 
+        activeIndex < contentSet.paragraphs.length && 
+        !contentSet.paragraphs[activeIndex].completed) {
+      localStorage.setItem('typedContent', typedContent);
+      localStorage.setItem('progress', progress.toString());
+    }
+  }, [typedContent, progress, activeIndex, contentSet]);
+
+  // Restore typing progress on mount or when active paragraph changes
+  useEffect(() => {
+    if (activeIndex !== null && contentSet && contentSet.paragraphs && 
+        activeIndex < contentSet.paragraphs.length && 
+        !contentSet.paragraphs[activeIndex].completed) {
+      const savedContent = localStorage.getItem('typedContent');
+      const savedProgress = localStorage.getItem('progress');
+      
+      if (savedContent) {
+        setTypedContent(savedContent);
+      }
+      
+      if (savedProgress) {
+        setProgress(parseFloat(savedProgress));
+      }
+    }
+  }, [activeIndex, contentSet]);
+
+  // Save and restore active paragraph index from localStorage
+  useEffect(() => {
+    // Restore active paragraph from localStorage when component mounts
+    const savedIndex = localStorage.getItem('activeParaIndex');
+    if (savedIndex && savedIndex !== 'null') {
+      setActiveIndex(parseInt(savedIndex, 10));
+    }
+  }, []);
+
+  // Save active paragraph index to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('activeParaIndex', activeIndex !== null ? activeIndex.toString() : 'null');
+  }, [activeIndex]);
 
   // Fetch content and initial stats
   useEffect(() => {
@@ -117,6 +163,27 @@ export default function ArticlePage() {
         setStats({
           words: userStats.words
         });
+
+        // If active index is set but paragraph is already completed, reset it
+        const savedIndex = localStorage.getItem('activeParaIndex');
+        if (savedIndex && savedIndex !== 'null' && content && content.paragraphs) {
+          const index = parseInt(savedIndex, 10);
+          if (index < content.paragraphs.length && content.paragraphs[index]?.completed) {
+            setActiveIndex(null);
+            localStorage.setItem('activeParaIndex', 'null');
+          } else if (index < content.paragraphs.length) {
+            // Initialize typing state for saved paragraph
+            setActiveIndex(index);
+            setIsTyping(true);
+          } else {
+            // Find first uncompleted paragraph if saved is not available
+            const firstUncompletedIndex = content.paragraphs.findIndex(p => !p.completed);
+            if (firstUncompletedIndex >= 0) {
+              setActiveIndex(firstUncompletedIndex);
+              localStorage.setItem('activeParaIndex', firstUncompletedIndex.toString());
+            }
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch initial data:', error);
       } finally {
@@ -128,7 +195,20 @@ export default function ArticlePage() {
   }, []);
   
   const handleTextClick = useCallback((index: number) => {
-    if (!contentSet || contentSet.paragraphs[index].completed) return;
+    // First check if contentSet exists and has valid paragraphs
+    if (!contentSet || !contentSet.paragraphs || 
+        index < 0 || index >= contentSet.paragraphs.length) {
+      console.error('Cannot handle text click: Content set not loaded or paragraph not found');
+      return;
+    }
+    
+    // Now safely check if paragraph is completed
+    if (contentSet.paragraphs[index].completed) {
+      console.log('Paragraph already completed');
+      return;
+    }
+    
+    // If we reach here, we can safely proceed
     setActiveIndex(index);
     setTypedContent('');
     setProgress(0);
@@ -164,49 +244,70 @@ export default function ArticlePage() {
 
   // Modified success handler to track completed paragraph and move to next paragraph
   const handleParagraphComplete = useCallback(async (index: number) => {
-    if (!contentSet) return;
+    if (!contentSet || !contentSet.paragraphs || 
+        index < 0 || index >= contentSet.paragraphs.length) {
+      console.error('Cannot complete paragraph: Content not loaded or paragraph index invalid');
+      return;
+    }
+    
+    // Clear saved typing progress
+    localStorage.removeItem('typedContent');
+    localStorage.removeItem('progress');
     
     setShowSuccess(index);
     
-    // Mark paragraph as completed in content service
-    const paragraphId = contentSet.paragraphs[index].id;
-    const updatedContentSet = await completeParagraph(paragraphId);
-    setContentSet(updatedContentSet);
-    
-    setIsTyping(false);
-    
-    // Track completed paragraph in stats - now only tracking words
-    const userStats = await trackCompletedParagraph(contentSet.paragraphs[index].content);
-    setStats({
-      words: userStats.words
-    });
-    
-    // Set a timeout to move to the next paragraph after showing success message
-    setTimeout(() => {
-      setActiveIndex(null);
-      setShowSuccess(null);
+    try {
+      // Mark paragraph as completed in content service
+      const paragraphId = contentSet.paragraphs[index].id;
+      const updatedContentSet = await completeParagraph(paragraphId);
+      setContentSet(updatedContentSet);
       
-      // Check if there's a next paragraph and if it's not already completed
-      const nextIndex = index + 1;
-      if (
-        nextIndex < contentSet.paragraphs.length && 
-        !contentSet.paragraphs[nextIndex].completed
-      ) {
-        // Automatically move to the next paragraph
-        setActiveIndex(nextIndex);
-        setTypedContent('');
-        setProgress(0);
-        setIsTyping(true);
+      setIsTyping(false);
+      
+      // Track completed paragraph in stats - now only tracking words
+      const userStats = await trackCompletedParagraph(contentSet.paragraphs[index].content);
+      setStats({
+        words: userStats.words
+      });
+      
+      // Trigger a refresh of stats components
+      setStatsRefreshKey(prev => prev + 1);
+      
+      // Set a timeout to move to the next paragraph after showing success message
+      setTimeout(() => {
+        setActiveIndex(null);
+        setShowSuccess(null);
         
-        // Scroll to the next paragraph
-        scrollToParagraph(nextIndex);
-      }
-    }, 1500);
+        // Check if there's a next paragraph and if it's not already completed
+        if (contentSet && contentSet.paragraphs) {
+          const nextIndex = index + 1;
+          if (
+            nextIndex < contentSet.paragraphs.length && 
+            !contentSet.paragraphs[nextIndex].completed
+          ) {
+            // Automatically move to the next paragraph
+            setActiveIndex(nextIndex);
+            setTypedContent('');
+            setProgress(0);
+            setIsTyping(true);
+            
+            // Scroll to the next paragraph
+            scrollToParagraph(nextIndex);
+          }
+        }
+      }, 1500);
+    } catch (error) {
+      console.error('Error completing paragraph:', error);
+    }
   }, [contentSet, scrollToParagraph]);
   
   // Modified handleKeyPress to use the new completion handler
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
-    if (activeIndex === null || !contentSet) return;
+    if (activeIndex === null || !contentSet || !contentSet.paragraphs || 
+        activeIndex >= contentSet.paragraphs.length) {
+      console.log('Cannot handle key press: Content or paragraph not available');
+      return;
+    }
     e.preventDefault();
 
     const currentText = contentSet.paragraphs[activeIndex].content;
@@ -226,7 +327,7 @@ export default function ArticlePage() {
         handleParagraphComplete(activeIndex);
       }
     }
-  }, [activeIndex, typedContent, contentSet, normalizeChar, handleParagraphComplete]);
+  }, [activeIndex, typedContent, contentSet, handleParagraphComplete]);
 
   useEffect(() => {
     if (isTyping) {
@@ -257,7 +358,11 @@ export default function ArticlePage() {
 
   // Modified mobile input handler to use the new completion handler
   const handleMobileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (activeIndex === null || !contentSet) return;
+    if (activeIndex === null || !contentSet || !contentSet.paragraphs ||
+        activeIndex >= contentSet.paragraphs.length) {
+      console.log('Cannot handle mobile input: Content or paragraph not available');
+      return;
+    }
 
     const currentText = contentSet.paragraphs[activeIndex].content;
     const inputValue = e.target.value;
@@ -289,11 +394,18 @@ export default function ArticlePage() {
 
   // Handler for marking wisdom sections as read
   const handleWisdomSectionClick = async (sectionId: string) => {
-    if (!contentSet) return;
+    if (!contentSet || !contentSet.wisdomSections) {
+      console.error('Cannot complete wisdom section: Content not loaded or wisdom sections not available');
+      return;
+    }
     
-    // Mark wisdom section as completed
-    const updatedContentSet = await completeWisdomSection(sectionId);
-    setContentSet(updatedContentSet);
+    try {
+      // Mark wisdom section as completed
+      const updatedContentSet = await completeWisdomSection(sectionId);
+      setContentSet(updatedContentSet);
+    } catch (error) {
+      console.error('Error completing wisdom section:', error);
+    }
   };
 
   // Add a space key handler to move to next paragraph quickly
@@ -315,6 +427,7 @@ export default function ArticlePage() {
           // Move to next paragraph if available and not completed
           if (
             contentSet && 
+            contentSet.paragraphs && 
             nextIndex < contentSet.paragraphs.length && 
             !contentSet.paragraphs[nextIndex].completed
           ) {
@@ -338,6 +451,19 @@ export default function ArticlePage() {
       window.removeEventListener('keydown', handleSpaceKey);
     };
   }, [showSuccess, isTyping, contentSet, scrollToParagraph]);
+
+  // Update the statsSection to use refreshKey
+  const statsSection = (
+    <div className="stats-section">
+      <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+        <DailyStats className="flex-1" refreshKey={statsRefreshKey} />
+        <TotalStats className="flex-1" refreshKey={statsRefreshKey} />
+      </div>
+      <div className="mt-6">
+        <WeeklyPerformanceChart refreshKey={statsRefreshKey} />
+      </div>
+    </div>
+  );
 
   // Loading state
   if (isLoading || !contentSet) {
@@ -415,10 +541,7 @@ export default function ArticlePage() {
               </button>
               
               {/* Weekly Performance Chart Component */}
-              <WeeklyPerformanceChart />
-              
-              {/* Total Stats Component */}
-              <TotalStats className="mt-4" />
+              {statsSection}
             </div>
           </motion.div>
         )}
@@ -533,54 +656,12 @@ export default function ArticlePage() {
           {/* Render wisdom sections based on type */}
           {contentSet.wisdomSections.map((section) => {
             // Determine the icon based on section type
-            let SectionIcon;
-            let bgColorClass;
-            let borderColorClass;
-            let textColorClass;
-            let activeTextColorClass;
-            let activeBgColorClass;
-
-            switch(section.type) {
-              case 'quote':
-                SectionIcon = QuoteIcon;
-                bgColorClass = section.completed ? 'bg-amber-100/90' : 'bg-amber-50/80';
-                borderColorClass = section.completed ? 'border-amber-200' : 'border-amber-100';
-                textColorClass = section.completed ? 'text-amber-800' : 'text-amber-700';
-                activeTextColorClass = section.completed ? 'text-amber-900' : 'text-amber-800';
-                activeBgColorClass = 'text-amber-600 bg-amber-100';
-                break;
-              case 'didYouKnow':
-                SectionIcon = LightBulbIcon;
-                bgColorClass = section.completed ? 'bg-purple-100/90' : 'bg-purple-50/80';
-                borderColorClass = section.completed ? 'border-purple-200' : 'border-purple-100';
-                textColorClass = section.completed ? 'text-purple-800' : 'text-purple-700';
-                activeTextColorClass = section.completed ? 'text-purple-900' : 'text-purple-800';
-                activeBgColorClass = 'text-purple-600 bg-purple-100';
-                break;
-              case 'recommendations':
-                SectionIcon = BookOpenIcon;
-                bgColorClass = section.completed ? 'bg-blue-100/90' : 'bg-blue-50/80';
-                borderColorClass = section.completed ? 'border-blue-200' : 'border-blue-100';
-                textColorClass = section.completed ? 'text-blue-800' : 'text-blue-700';
-                activeTextColorClass = section.completed ? 'text-blue-900' : 'text-blue-800';
-                activeBgColorClass = 'text-blue-600 bg-blue-100';
-                break;
-              case 'question':
-                SectionIcon = QuestionIcon;
-                bgColorClass = section.completed ? 'bg-green-100/90' : 'bg-green-50/80';
-                borderColorClass = section.completed ? 'border-green-200' : 'border-green-100';
-                textColorClass = section.completed ? 'text-green-800' : 'text-green-700';
-                activeTextColorClass = section.completed ? 'text-green-900' : 'text-green-800';
-                activeBgColorClass = 'text-green-600 bg-green-100';
-                break;
-              default:
-                SectionIcon = QuoteIcon;
-                bgColorClass = 'bg-gray-50/80';
-                borderColorClass = 'border-gray-100';
-                textColorClass = 'text-gray-700';
-                activeTextColorClass = 'text-gray-800';
-                activeBgColorClass = 'text-gray-600 bg-gray-100';
-            }
+            let SectionIcon = QuoteIcon;
+            let bgColorClass = section.completed ? 'bg-amber-100/90' : 'bg-amber-50/80';
+            let borderColorClass = section.completed ? 'border-amber-200' : 'border-amber-100';
+            let textColorClass = section.completed ? 'text-amber-800' : 'text-amber-700';
+            let activeTextColorClass = section.completed ? 'text-amber-900' : 'text-amber-800';
+            let activeBgColorClass = 'text-amber-600 bg-amber-100';
 
             return (
               <motion.div

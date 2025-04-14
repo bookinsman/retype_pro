@@ -151,25 +151,107 @@ function calculateStreak(days: DailyStats[], currentDayIndex: number): number {
 
 // Get weekly stats for a specific week
 export async function getWeeklyStats(weekOffset = 0): Promise<WeeklyStats> {
-  // In the future, this will fetch from a database or API
-  // For example with Supabase:
-  // 
-  // const { start, end } = getWeekDates(weekOffset);
-  // const { data, error } = await supabase
-  //   .from('daily_stats')
-  //   .select('*')
-  //   .gte('date', start.toISOString())
-  //   .lte('date', end.toISOString())
-  //   .order('date');
-  //
-  // if (error) throw new Error('Failed to fetch stats: ' + error.message);
-  // return processStatsData(data);
+  // Import supabase client dynamically to avoid circular dependencies
+  const { supabase, getCurrentUserId } = await import('./supabaseClient');
   
-  // For now, just return current week data with mock values
-  // This would be adjusted to return historical data based on weekOffset
-  const currentStats: UserStats = {
-    words: 3500
+  try {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.log('No user ID found for weekly stats');
+      return generateEmptyWeeklyStats(weekOffset);
+    }
+    
+    const { start, end } = getWeekDates(weekOffset);
+    const { data, error } = await supabase
+      .from('user_daily_stats')
+      .select('date, total_words')
+      .eq('user_id', userId)
+      .gte('date', start.toISOString().split('T')[0])
+      .lte('date', end.toISOString().split('T')[0])
+      .order('date');
+    
+    if (error) {
+      console.error('Failed to fetch weekly stats:', error);
+      return generateEmptyWeeklyStats(weekOffset);
+    }
+    
+    // If no data found, return empty stats
+    if (!data || data.length === 0) {
+      return generateEmptyWeeklyStats(weekOffset);
+    }
+    
+    // Process the data from Supabase
+    return processStatsData(data, weekOffset);
+  } catch (e) {
+    console.error('Error in getWeeklyStats:', e);
+    return generateEmptyWeeklyStats(weekOffset);
+  }
+}
+
+// Generate empty weekly stats
+function generateEmptyWeeklyStats(weekOffset: number): WeeklyStats {
+  const { start: weekStartDate, end: weekEndDate } = getWeekDates(weekOffset);
+  const days: DailyStats[] = Array(7).fill(null).map((_, index) => {
+    const date = new Date(weekStartDate);
+    date.setDate(weekStartDate.getDate() + index);
+    return {
+      date,
+      words: 0,
+      productivityScore: 0
+    };
+  });
+  
+  return {
+    days,
+    streak: 0,
+    mostProductiveDayIndex: 0,
+    weekStartDate,
+    weekEndDate
   };
+}
+
+// Process stats data from Supabase
+function processStatsData(data: any[], weekOffset: number): WeeklyStats {
+  const { start: weekStartDate, end: weekEndDate } = getWeekDates(weekOffset);
+  const currentDayIndex = weekOffset === 0 ? getCurrentDayIndex() : 6;
   
-  return generateWeeklyStats(currentStats, weekOffset);
+  // Create a map of dates to word counts
+  const dateMap: Record<string, number> = {};
+  data.forEach(item => {
+    dateMap[item.date] = item.total_words;
+  });
+  
+  // Create an array of daily stats for the week
+  const days: DailyStats[] = Array(7).fill(null).map((_, index) => {
+    const date = new Date(weekStartDate);
+    date.setDate(weekStartDate.getDate() + index);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    return {
+      date,
+      words: dateMap[dateStr] || 0,
+      productivityScore: 0 // Will be calculated later
+    };
+  });
+  
+  // Calculate productivity scores
+  const productivityScores = calculateProductivityScores(days);
+  days.forEach((day, index) => {
+    day.productivityScore = productivityScores[index];
+  });
+  
+  // Find most productive day
+  const maxProductivity = Math.max(...productivityScores);
+  const mostProductiveDayIndex = maxProductivity > 0 ? productivityScores.indexOf(maxProductivity) : currentDayIndex;
+  
+  // Calculate streak
+  const streak = calculateStreak(days, weekOffset === 0 ? currentDayIndex : 6);
+  
+  return {
+    days,
+    streak,
+    mostProductiveDayIndex,
+    weekStartDate,
+    weekEndDate
+  };
 } 

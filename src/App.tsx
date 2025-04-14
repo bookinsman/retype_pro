@@ -3,18 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import WisdomMinimalLanding from './pages/WisdomMinimalLanding';
 import ArticlePage from './pages/ArticlePage';
 import ExamplePage from './pages/ExamplePage';
+import { isAuthenticated } from './services/supabaseClient';
 
-// Simple auth check - you can replace this with your actual auth logic
-const isAuthenticated = () => {
-  // For now, just checking if there's any token in localStorage
-  return localStorage.getItem('auth_token') !== null;
-};
-
-// Protected Route component
+// Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated()) {
+    // Redirect to the landing page if not authenticated
     return <Navigate to="/" replace />;
   }
+  
   return <>{children}</>;
 };
 

@@ -9,6 +9,7 @@ interface UseWeeklyStatsReturn {
   previousWeek: () => void;
   nextWeek: () => void;
   currentWeek: () => void;
+  refreshStats: () => void;
   currentMonthName: string;
   currentYear: number;
   weekStartDate: Date | null;
@@ -78,42 +79,47 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
   }, []);
 
   // Fetch weekly stats data
+  const fetchWeeklyStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const stats = await getWeeklyStats(weekOffset);
+      setWeeklyStats(stats);
+      
+      // Set week start and end dates
+      if (stats.days.length > 0) {
+        const startDate = new Date(stats.days[0].date);
+        const endDate = new Date(stats.days[stats.days.length - 1].date);
+        setWeekDates({ start: startDate, end: endDate });
+      }
+      
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch weekly stats'));
+    } finally {
+      setLoading(false);
+    }
+  }, [weekOffset]);
+
+  // Function to manually refresh stats
+  const refreshStats = useCallback(() => {
+    fetchWeeklyStats();
+  }, [fetchWeeklyStats]);
+
+  // Fetch stats on mount and when weekOffset changes
   useEffect(() => {
     let isMounted = true;
     
-    const fetchWeeklyStats = async () => {
-      setLoading(true);
-      try {
-        const stats = await getWeeklyStats(weekOffset);
-        if (isMounted) {
-          setWeeklyStats(stats);
-          
-          // Set week start and end dates
-          if (stats.days.length > 0) {
-            const startDate = new Date(stats.days[0].date);
-            const endDate = new Date(stats.days[stats.days.length - 1].date);
-            setWeekDates({ start: startDate, end: endDate });
-          }
-          
-          setError(null);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err : new Error('Failed to fetch weekly stats'));
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
+    const fetchData = async () => {
+      if (!isMounted) return;
+      await fetchWeeklyStats();
     };
 
-    fetchWeeklyStats();
+    fetchData();
 
     return () => {
       isMounted = false;
     };
-  }, [weekOffset]);
+  }, [weekOffset, fetchWeeklyStats]);
 
   return {
     weeklyStats,
@@ -123,6 +129,7 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     previousWeek,
     nextWeek,
     currentWeek,
+    refreshStats,
     currentMonthName,
     currentYear,
     weekStartDate: weekDates.start,

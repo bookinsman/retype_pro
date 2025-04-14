@@ -4,18 +4,35 @@ import { motion } from 'framer-motion';
 
 interface TotalStatsProps {
   className?: string;
+  refreshKey?: number;
 }
 
-const TotalStats: React.FC<TotalStatsProps> = ({ className = '' }) => {
-  const [wordCount, setWordCount] = React.useState(0);
+const TotalStats: React.FC<TotalStatsProps> = ({ className = '', refreshKey = 0 }) => {
+  const [wordCount, setWordCount] = React.useState<number | null>(0);
+  const [isLoading, setIsLoading] = React.useState(true);
+  
+  const fetchTotalStats = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const userStats = await getUserStats();
+      setWordCount(userStats?.words || 0);
+    } catch (error) {
+      console.log('Error fetching total stats:', error);
+      setWordCount(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
   
   React.useEffect(() => {
-    async function fetchTotalStats() {
-      const userStats = await getUserStats();
-      setWordCount(userStats.words);
-    }
     fetchTotalStats();
-  }, []);
+  }, [fetchTotalStats]);
+  
+  React.useEffect(() => {
+    if (refreshKey > 0) {
+      fetchTotalStats();
+    }
+  }, [refreshKey, fetchTotalStats]);
   
   return (
     <div className={`bg-gray-50 rounded-lg p-4 ${className}`}>
@@ -28,7 +45,7 @@ const TotalStats: React.FC<TotalStatsProps> = ({ className = '' }) => {
         transition={{ duration: 0.5 }}
       >
         <div className="mb-1 text-xs text-gray-400 uppercase font-lora tracking-wider">Žodžių perrašyta</div>
-        <div className="text-3xl font-light text-gray-800 font-mono">{wordCount.toLocaleString()}</div>
+        <div className="text-3xl font-light text-gray-800 font-mono">{(wordCount || 0).toLocaleString()}</div>
         <div className="mt-2 text-xs text-gray-500 font-lora italic">Viso nuo pradžios</div>
       </motion.div>
     </div>
