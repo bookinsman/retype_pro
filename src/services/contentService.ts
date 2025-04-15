@@ -177,8 +177,9 @@ function getDefaultContent(): ContentSet {
 
 // Mark paragraph as completed
 export async function completeParagraph(paragraphId: string): Promise<ContentSet> {
-  // Import Supabase client to avoid circular dependencies
-  const { getCurrentUserId, updateContentProgress, logWordCount } = await import('./supabaseClient');
+  // Import dependencies to avoid circular references
+  const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
+  const { saveTypingSession } = await import('./sessionService');
   
   // Get the current user ID
   const userId = getCurrentUserId();
@@ -187,7 +188,16 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
     throw new Error('User not authenticated');
   }
   
-  // Save to localStorage immediately for better reliability
+  // Get the paragraph content from our local state
+  let paragraphContent = '';
+  if (currentContentSet) {
+    const paragraph = currentContentSet.paragraphs.find(p => p.id === paragraphId);
+    if (paragraph) {
+      paragraphContent = paragraph.content;
+    }
+  }
+  
+  // Save to localStorage for immediate feedback
   try {
     const localKey = `paragraph_${paragraphId}_completed`;
     localStorage.setItem(localKey, 'true');
@@ -205,11 +215,16 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
     } else {
       console.log('Successfully marked paragraph as completed in Supabase');
       
-      // Use a fixed word count per paragraph to ensure consistency
-      // Instead of calculating based on actual text which can lead to double-counting
-      const FIXED_WORDS_PER_PARAGRAPH = 8;
-      await logWordCount(FIXED_WORDS_PER_PARAGRAPH);
-      console.log(`Logged fixed word count of ${FIXED_WORDS_PER_PARAGRAPH} words for completed paragraph`);
+      // Save the typing session to Supabase
+      // For paragraph completion, we count the user having typed the full text
+      await saveTypingSession(
+        paragraphContent,  // Original text
+        paragraphContent,  // We consider the user to have typed the full text correctly
+        paragraphId,       // Reference to the paragraph
+        undefined          // No wisdom ID for paragraphs
+      );
+      
+      console.log('Saved typing session for paragraph completion');
     }
   } catch (error) {
     console.error('Error updating paragraph completion:', error);
@@ -231,8 +246,9 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
 
 // Mark wisdom section as completed
 export async function completeWisdomSection(sectionId: string): Promise<ContentSet> {
-  // Import Supabase client to avoid circular dependencies
-  const { getCurrentUserId, updateContentProgress, logWordCount } = await import('./supabaseClient');
+  // Import dependencies to avoid circular references
+  const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
+  const { saveTypingSession } = await import('./sessionService');
   
   // Get the current user ID
   const userId = getCurrentUserId();
@@ -241,7 +257,16 @@ export async function completeWisdomSection(sectionId: string): Promise<ContentS
     throw new Error('User not authenticated');
   }
   
-  // Save to localStorage immediately for better reliability
+  // Get the wisdom content from our local state
+  let wisdomContent = '';
+  if (currentContentSet) {
+    const wisdom = currentContentSet.wisdomSections.find(w => w.id === sectionId);
+    if (wisdom) {
+      wisdomContent = wisdom.content;
+    }
+  }
+  
+  // Save to localStorage for immediate feedback
   try {
     const localKey = `wisdom_${sectionId}_completed`;
     localStorage.setItem(localKey, 'true');
@@ -259,10 +284,16 @@ export async function completeWisdomSection(sectionId: string): Promise<ContentS
     } else {
       console.log('Successfully marked wisdom section as completed in Supabase');
       
-      // Use a fixed word count per wisdom section
-      const FIXED_WORDS_PER_WISDOM = 10;
-      await logWordCount(FIXED_WORDS_PER_WISDOM);
-      console.log(`Logged fixed word count of ${FIXED_WORDS_PER_WISDOM} words for completed wisdom section`);
+      // Save the typing session to Supabase
+      // For wisdom completion, we count the user having typed the full text
+      await saveTypingSession(
+        wisdomContent,  // Original text
+        wisdomContent,  // We consider the user to have typed the full text correctly
+        undefined,      // No paragraph ID for wisdom sections
+        sectionId       // Reference to the wisdom section
+      );
+      
+      console.log('Saved typing session for wisdom section completion');
     }
   } catch (error) {
     console.error('Error updating wisdom section completion:', error);

@@ -15,6 +15,15 @@ export interface DailyStats extends UserStats {
   date: string;
 }
 
+/**
+ * Format a date to YYYY-MM-DD string format
+ * @param date The date to format
+ * @returns The formatted date string
+ */
+export function formatDateToYYYYMMDD(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
 // Format time from seconds to "mm:ss" format
 export function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60);

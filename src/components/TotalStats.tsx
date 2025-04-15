@@ -1,5 +1,5 @@
 import React from 'react';
-import { getUserStats } from '../services/statsService';
+import { fetchAllTimeWordCount } from '../services/sessionService';
 import { motion } from 'framer-motion';
 
 interface TotalStatsProps {
@@ -14,8 +14,8 @@ const TotalStats: React.FC<TotalStatsProps> = ({ className = '', refreshKey = 0 
   const fetchTotalStats = React.useCallback(async () => {
     try {
       setIsLoading(true);
-      const userStats = await getUserStats();
-      setWordCount(userStats?.words || 0);
+      const totalWords = await fetchAllTimeWordCount();
+      setWordCount(totalWords);
     } catch (error) {
       console.log('Error fetching total stats:', error);
       setWordCount(0);
@@ -30,6 +30,7 @@ const TotalStats: React.FC<TotalStatsProps> = ({ className = '', refreshKey = 0 
   
   React.useEffect(() => {
     if (refreshKey > 0) {
+      console.log('TotalStats: refreshKey changed, fetching new stats');
       fetchTotalStats();
     }
   }, [refreshKey, fetchTotalStats]);

@@ -542,71 +542,16 @@ function saveProgressLocally(
 // WORD COUNT TRACKING
 // ========================
 
-// Log completed words
+/**
+ * Logs a fixed word count (for backward compatibility)
+ * This function will be replaced by the more comprehensive sessionService approach
+ */
 export async function logWordCount(wordCount: number): Promise<boolean> {
-  try {
-    const userId = getUserId();
-    if (!userId) {
-      console.log('No user ID found, cannot log word count');
-      return false;
-    }
-    
-    // First save to localStorage as reliable backup - don't wait for Supabase
-    try {
-      saveStatsLocally(userId, wordCount);
-      console.log(`Logged ${wordCount} words locally for user ${userId}`);
-    } catch (localError) {
-      console.error('Error saving to localStorage:', localError);
-    }
-    
-    // Skip Supabase for local or demo users
-    if (userId.startsWith('LOCAL-') || userId.startsWith('DEMO')) {
-      console.log(`Using local-only mode for user ${userId}, skipping Supabase updates`);
-      return true;
-    }
-    
-    // Try to log to Supabase, but don't block if it fails
-    try {
-      // Simple word log entry
-      const wordLogEntry = {
-        user_id: userId,
-        word_count: wordCount
-      };
-      
-      // Insert into word_logs table
-      const { error } = await supabase
-        .from('word_logs')
-        .insert(wordLogEntry);
-        
-      if (error) {
-        console.error('Error logging to word_logs table:', error.message);
-      } else {
-        console.log('Successfully logged to word_logs table');
-      }
-    } catch (loggingError) {
-      console.error('Exception logging to word_logs:', loggingError);
-    }
-    
-    // Update the legacy stats tables in the background
-    try {
-      updateUserStats({ words: wordCount })
-        .then(success => {
-          if (success) {
-            console.log('Legacy stats updated successfully');
-          }
-        })
-        .catch(e => {
-          console.error('Error updating legacy stats:', e);
-        });
-    } catch (updateError) {
-      console.error('Error starting legacy stats update:', updateError);
-    }
-    
-    return true; // Return success since we saved to localStorage
-  } catch (e) {
-    console.error('Exception in logWordCount:', e);
-    return true; // Return success to allow app to continue
-  }
+  // Import the logWordCount function from sessionService
+  const { logWordCount: logWordCountInSession } = await import('./sessionService');
+  
+  // Forward the call to the new implementation
+  return logWordCountInSession(wordCount);
 }
 
 // Get today's word count

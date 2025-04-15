@@ -1,16 +1,17 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/ArticlePage.css';
 import StatsPanel from '../components/StatsPanel';
 import AudioPlayer from '../components/AudioPlayer';
-import { getUserStats, getTodayStats, trackCompletedParagraph, trackTimeSpent, formatTime } from '../services/statsService';
+import { formatTime, trackCompletedParagraph, trackTimeSpent } from '../services/statsService';
 import { QuoteIcon } from '../components/Icons';
 import { normalizeChar } from '../utils/characterUtils';
 import WeeklyPerformanceChart from '../components/WeeklyPerformanceChart';
 import TotalStats from '../components/TotalStats';
 import DailyStats from '../components/DailyStats';
-import { getCurrentContent, completeParagraph, completeWisdomSection, isContentSetCompleted, ContentSet, Paragraph, WisdomSection } from '../services/contentService';
+import { getCurrentContent, completeParagraph, completeWisdomSection, isContentSetCompleted, ContentSet, Paragraph, WisdomSection as WisdomSectionType } from '../services/contentService';
 import LoadingAnimation from '../components/LoadingAnimation';
+import { fetchTodaysWordCount } from '../services/sessionService';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,6 +27,12 @@ import {
   LineController
 } from 'chart.js';
 import { Doughnut, Bar, Line } from 'react-chartjs-2';
+import { useParams, useNavigate } from 'react-router-dom';
+import { startTimeTracking, pauseTimeTracking, resumeTimeTracking, resetTimeTracking } from '../services/sessionService';
+import WisdomSection from '../components/WisdomSection';
+import ProgressHeatMap from '../components/ProgressHeatMap';
+import Confetti from '../components/Confetti';
+import TypingArea from '../components/TypingArea';
 
 // Register ChartJS components
 ChartJS.register(
@@ -159,30 +166,16 @@ export default function ArticlePage() {
         const content = await getCurrentContent();
         setContentSet(content);
         
-        // Get stats from localStorage first for immediate feedback
-        const localTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
-        const today = new Date().toISOString().split('T')[0];
-        const todayKey = `words_${today}`;
-        const localTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
-        
-        console.log(`Retrieved stats from localStorage: total words: ${localTotalWords}, today: ${localTodayWords}`);
-        
-        // Set initial stats from localStorage
-        setStats({
-          words: localTotalWords
-        });
-        
-        // Then fetch from server to update if available
+        // Fetch today's word count from the new sessionService
         try {
-          const userStats = await getTodayStats();
-          if (userStats.words > 0) {
-            setStats({
-              words: userStats.words
-            });
-            console.log(`Updated stats from server: ${userStats.words} words`);
-          }
+          const todayWords = await fetchTodaysWordCount();
+          setStats({
+            words: todayWords
+          });
+          console.log(`Retrieved today's word count: ${todayWords} words`);
         } catch (statsError) {
-          console.error('Failed to fetch stats from server, using localStorage only:', statsError);
+          console.error('Failed to fetch stats:', statsError);
+          setStats({ words: 0 });
         }
 
         // If active index is set but paragraph is already completed, reset it
@@ -198,15 +191,11 @@ export default function ArticlePage() {
             setIsTyping(true);
           } else {
             // Find first uncompleted paragraph if saved is not available
-            const firstUncompletedIndex = content.paragraphs.findIndex(p => !p.completed);
-            if (firstUncompletedIndex >= 0) {
-              setActiveIndex(firstUncompletedIndex);
-              localStorage.setItem('activeParaIndex', firstUncompletedIndex.toString());
-            }
+            setActiveIndex(null);
           }
         }
       } catch (error) {
-        console.error('Failed to fetch initial data:', error);
+        console.error('Error in initial data loading:', error);
       } finally {
         setIsLoading(false);
       }
@@ -263,94 +252,46 @@ export default function ArticlePage() {
     }
   }, []);
 
-  // Handler for paragraph completion
-  const handleParagraphComplete = useCallback(async (index: number) => {
-    localStorage.removeItem('typedContent');
-    localStorage.removeItem('progress');
+  // Handle paragraph completion - the main function to update stats
+  const handleParagraphCompleted = async () => {
+    if (activeIndex === null || !contentSet || activeIndex >= contentSet.paragraphs.length) {
+      return;
+    }
     
-    setShowSuccess(index);
+    const paragraphId = contentSet.paragraphs[activeIndex].id;
+    console.log('Completing paragraph:', paragraphId);
     
     try {
-      if (!contentSet || !contentSet.paragraphs) {
-        console.error('Cannot complete paragraph: Content not loaded');
-        return;
-      }
+      // Update progress in Supabase with completeParagraph function
+      // This will also log the typing session via our new sessionService
+      const updatedContent = await completeParagraph(paragraphId);
+      setContentSet(updatedContent);
       
-      console.log(`Completing paragraph ${index + 1} of ${contentSet.paragraphs.length}`);
+      // Clear local storage items for this paragraph
+      localStorage.removeItem('typedContent');
+      localStorage.removeItem('progress');
       
-      // Mark paragraph as completed in content service
-      const paragraphId = contentSet.paragraphs[index].id;
-      const updatedContentSet = await completeParagraph(paragraphId);
-      setContentSet(updatedContentSet);
+      // Update the stats display with a new refresh key
+      setStatsRefreshKey(prev => prev + 1);
       
-      // Calculate word count for better tracking
-      const paragraphContent = contentSet.paragraphs[index].content;
-      const wordCount = paragraphContent.trim().split(/\s+/).length;
-      console.log(`Paragraph completed with ${wordCount} words`);
-      
-      setIsTyping(false);
-      
-      // Track completed paragraph in stats - now only tracking words
-      const userStats = await trackCompletedParagraph(contentSet.paragraphs[index].content);
-      console.log('Updated user stats:', userStats);
-      
-      // Update stats in the UI immediately
-      setStats({
-        words: userStats.words
-      });
-      
-      // Force clear any cached data to ensure fresh stats
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const todayKey = `words_${today}`;
-        const todayWords = localStorage.getItem(todayKey);
-        console.log(`Today's words after paragraph completion: ${todayWords || '0'}`);
-      } catch (e) {
-        console.error('Error checking localStorage stats:', e);
-      }
-      
-      // Trigger a refresh of stats components after a short delay
-      // This delay ensures all database operations have completed
+      // Show success animation
+      setShowSuccess(activeIndex);
       setTimeout(() => {
-        console.log('Refreshing stats with new refreshKey');
-        setStatsRefreshKey(prevKey => {
-          const newKey = prevKey + 1;
-          console.log(`Stats refresh key updated: ${prevKey} -> ${newKey}`);
-          return newKey;
-        });
-      }, 800); // Increase delay to ensure updates are complete
-      
-      // Set a timeout to move to the next paragraph after showing success message
-      setTimeout(() => {
-        setActiveIndex(null);
         setShowSuccess(null);
-        
-        // Check if there's a next paragraph and if it's not already completed
-        if (contentSet && contentSet.paragraphs) {
-          const nextIndex = index + 1;
-          if (
-            nextIndex < contentSet.paragraphs.length && 
-            !contentSet.paragraphs[nextIndex].completed
-          ) {
-            // Automatically move to the next paragraph
-            setActiveIndex(nextIndex);
-            setTypedContent('');
-            setProgress(0);
-            setIsTyping(true);
-            
-            // Scroll to the next paragraph
-            scrollToParagraph(nextIndex);
-            
-            console.log(`Moving to next paragraph (index: ${nextIndex})`);
-          } else {
-            console.log('No more uncompleted paragraphs to move to');
-          }
-        }
-      }, 1500);
+      }, 2000);
+      
+      // Reset state
+      setTypedContent('');
+      setActiveIndex(null);
+      setProgress(0);
+      setIsTyping(false);
+
+      // Track time and completion
+      await trackCompletedParagraph(contentSet.paragraphs[activeIndex].content);
     } catch (error) {
       console.error('Error completing paragraph:', error);
     }
-  }, [contentSet, scrollToParagraph, statsRefreshKey]);
+  };
   
   // Modified handleKeyPress to use the new completion handler
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
@@ -375,10 +316,10 @@ export default function ArticlePage() {
       setProgress(newProgress);
 
       if (newTypedContent === currentText) {
-        handleParagraphComplete(activeIndex);
+        handleParagraphCompleted();
       }
     }
-  }, [activeIndex, typedContent, contentSet, handleParagraphComplete]);
+  }, [activeIndex, typedContent, contentSet, handleParagraphCompleted]);
 
   useEffect(() => {
     if (isTyping) {
@@ -433,7 +374,7 @@ export default function ArticlePage() {
       setProgress(newProgress);
 
       if (newTypedContent === currentText) {
-        handleParagraphComplete(activeIndex);
+        handleParagraphCompleted();
       }
     }
   };
@@ -452,17 +393,23 @@ export default function ArticlePage() {
     }, 500);
   };
 
-  // Handler for marking wisdom sections as read
+  // Handle wisdom section completion
   const handleWisdomSectionClick = async (sectionId: string) => {
-    if (!contentSet || !contentSet.wisdomSections) {
-      console.error('Cannot complete wisdom section: Content not loaded or wisdom sections not available');
-      return;
-    }
+    if (isLoading) return;
+    
+    console.log('Completing wisdom section:', sectionId);
     
     try {
-      // Mark wisdom section as completed
-      const updatedContentSet = await completeWisdomSection(sectionId);
-      setContentSet(updatedContentSet);
+      // Mark wisdom section as completed in Supabase
+      // This will also log the typing session via our new sessionService
+      const updatedContent = await completeWisdomSection(sectionId);
+      setContentSet(updatedContent);
+      
+      // Update stats display with a new refresh key
+      setStatsRefreshKey(prev => prev + 1);
+
+      // Pause time tracking on wisdom completion
+      pauseTimeTracking();
     } catch (error) {
       console.error('Error completing wisdom section:', error);
     }
@@ -524,6 +471,28 @@ export default function ArticlePage() {
       </div>
     </div>
   );
+
+  // Effect to start time tracking when typing begins - MOVED BEFORE THE CONDITIONAL RETURN
+  useEffect(() => {
+    if (isTyping && !allContentCompleted) {
+      resumeTimeTracking();
+    } else {
+      pauseTimeTracking();
+    }
+  }, [isTyping, allContentCompleted]);
+
+  // Reset time tracking when switching to a new article - MOVED BEFORE THE CONDITIONAL RETURN
+  useEffect(() => {
+    if (contentSet && contentSet.id) {
+      resetTimeTracking();
+      startTimeTracking();
+      
+      return () => {
+        // Pause tracking when leaving the page
+        pauseTimeTracking();
+      };
+    }
+  }, [contentSet?.id]);
 
   // Loading state
   if (isLoading || !contentSet) {

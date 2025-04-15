@@ -1,5 +1,5 @@
 import React from 'react';
-import { getTodayStats } from '../services/statsService';
+import { fetchTodaysWordCount } from '../services/sessionService';
 import { motion } from 'framer-motion';
 
 interface DailyStatsProps {
@@ -14,8 +14,8 @@ const DailyStats: React.FC<DailyStatsProps> = ({ className = '', refreshKey = 0 
   const fetchDailyStats = React.useCallback(async () => {
     try {
       setIsLoading(true);
-      const userStats = await getTodayStats();
-      setWordCount(userStats?.words || 0);
+      const todayWords = await fetchTodaysWordCount();
+      setWordCount(todayWords);
     } catch (error) {
       console.log('Error fetching daily stats:', error);
       setWordCount(0);
@@ -30,6 +30,7 @@ const DailyStats: React.FC<DailyStatsProps> = ({ className = '', refreshKey = 0 
   
   React.useEffect(() => {
     if (refreshKey > 0) {
+      console.log('DailyStats: refreshKey changed, fetching new stats');
       fetchDailyStats();
     }
   }, [refreshKey, fetchDailyStats]);

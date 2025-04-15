@@ -160,11 +160,11 @@
       });
     }
   }
-})({"g0ov7":[function(require,module,exports,__globalThis) {
+})({"7KwkS":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 5000;
+var HMR_SERVER_PORT = 1234;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -33252,7 +33252,7 @@ $RefreshReg$(_c2, "WisdomMinimalLanding");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/supabaseClient":"jgwHA"}],"d3GZa":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","../services/supabaseClient":"jgwHA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"d3GZa":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$b71d = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$b71d.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -45886,8 +45886,10 @@ parcelHelpers.export(exports, "updateContentProgress", ()=>updateContentProgress
 // ========================
 // WORD COUNT TRACKING
 // ========================
-// Log completed words
-parcelHelpers.export(exports, "logWordCount", ()=>logWordCount);
+/**
+ * Logs a fixed word count (for backward compatibility)
+ * This function will be replaced by the more comprehensive sessionService approach
+ */ parcelHelpers.export(exports, "logWordCount", ()=>logWordCount);
 // Get today's word count
 parcelHelpers.export(exports, "getTodayWordCount", ()=>getTodayWordCount);
 // Get weekly word count
@@ -46286,55 +46288,10 @@ function saveProgressLocally(userId, contentId, contentType, completed) {
     }
 }
 async function logWordCount(wordCount) {
-    try {
-        const userId = getUserId();
-        if (!userId) {
-            console.log('No user ID found, cannot log word count');
-            return false;
-        }
-        // First save to localStorage as reliable backup - don't wait for Supabase
-        try {
-            saveStatsLocally(userId, wordCount);
-            console.log(`Logged ${wordCount} words locally for user ${userId}`);
-        } catch (localError) {
-            console.error('Error saving to localStorage:', localError);
-        }
-        // Skip Supabase for local or demo users
-        if (userId.startsWith('LOCAL-') || userId.startsWith('DEMO')) {
-            console.log(`Using local-only mode for user ${userId}, skipping Supabase updates`);
-            return true;
-        }
-        // Try to log to Supabase, but don't block if it fails
-        try {
-            // Simple word log entry
-            const wordLogEntry = {
-                user_id: userId,
-                word_count: wordCount
-            };
-            // Insert into word_logs table
-            const { error } = await supabase.from('word_logs').insert(wordLogEntry);
-            if (error) console.error('Error logging to word_logs table:', error.message);
-            else console.log('Successfully logged to word_logs table');
-        } catch (loggingError) {
-            console.error('Exception logging to word_logs:', loggingError);
-        }
-        // Update the legacy stats tables in the background
-        try {
-            updateUserStats({
-                words: wordCount
-            }).then((success)=>{
-                if (success) console.log('Legacy stats updated successfully');
-            }).catch((e)=>{
-                console.error('Error updating legacy stats:', e);
-            });
-        } catch (updateError) {
-            console.error('Error starting legacy stats update:', updateError);
-        }
-        return true; // Return success since we saved to localStorage
-    } catch (e) {
-        console.error('Exception in logWordCount:', e);
-        return true; // Return success to allow app to continue
-    }
+    // Import the logWordCount function from sessionService
+    const { logWordCount: logWordCountInSession } = await require("8f54397f53e30ae0");
+    // Forward the call to the new implementation
+    return logWordCountInSession(wordCount);
 }
 async function getTodayWordCount() {
     try {
@@ -46744,7 +46701,7 @@ async function ensureUserInitialized(userId) {
     }
 }
 
-},{"@supabase/supabase-js":"gKVA2","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gKVA2":[function(require,module,exports,__globalThis) {
+},{"@supabase/supabase-js":"gKVA2","8f54397f53e30ae0":"hD5tF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gKVA2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PostgrestError", ()=>(0, _postgrestJs.PostgrestError));
@@ -56192,7 +56149,10 @@ exports.default = AuthClient;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"lgY8V":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hD5tF":[function(require,module,exports,__globalThis) {
+module.exports = Promise.resolve(module.bundle.root("9Rug3"));
+
+},{"9Rug3":"9Rug3"}],"lgY8V":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$fce4 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$fce4.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -56224,6 +56184,7 @@ var _dailyStatsDefault = parcelHelpers.interopDefault(_dailyStats);
 var _contentService = require("../services/contentService");
 var _loadingAnimation = require("../components/LoadingAnimation");
 var _loadingAnimationDefault = parcelHelpers.interopDefault(_loadingAnimation);
+var _sessionService = require("../services/sessionService");
 var _chartJs = require("chart.js");
 var _s = $RefreshSig$();
 // Register ChartJS components
@@ -56332,27 +56293,18 @@ function ArticlePage() {
                 // Fetch content
                 const content = await (0, _contentService.getCurrentContent)();
                 setContentSet(content);
-                // Get stats from localStorage first for immediate feedback
-                const localTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
-                const today = new Date().toISOString().split('T')[0];
-                const todayKey = `words_${today}`;
-                const localTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
-                console.log(`Retrieved stats from localStorage: total words: ${localTotalWords}, today: ${localTodayWords}`);
-                // Set initial stats from localStorage
-                setStats({
-                    words: localTotalWords
-                });
-                // Then fetch from server to update if available
+                // Fetch today's word count from the new sessionService
                 try {
-                    const userStats = await (0, _statsService.getTodayStats)();
-                    if (userStats.words > 0) {
-                        setStats({
-                            words: userStats.words
-                        });
-                        console.log(`Updated stats from server: ${userStats.words} words`);
-                    }
+                    const todayWords = await (0, _sessionService.fetchTodaysWordCount)();
+                    setStats({
+                        words: todayWords
+                    });
+                    console.log(`Retrieved today's word count: ${todayWords} words`);
                 } catch (statsError) {
-                    console.error('Failed to fetch stats from server, using localStorage only:', statsError);
+                    console.error('Failed to fetch stats:', statsError);
+                    setStats({
+                        words: 0
+                    });
                 }
                 // If active index is set but paragraph is already completed, reset it
                 const savedIndex = localStorage.getItem('activeParaIndex');
@@ -56365,17 +56317,11 @@ function ArticlePage() {
                         // Initialize typing state for saved paragraph
                         setActiveIndex(index);
                         setIsTyping(true);
-                    } else {
-                        // Find first uncompleted paragraph if saved is not available
-                        const firstUncompletedIndex = content.paragraphs.findIndex((p)=>!p.completed);
-                        if (firstUncompletedIndex >= 0) {
-                            setActiveIndex(firstUncompletedIndex);
-                            localStorage.setItem('activeParaIndex', firstUncompletedIndex.toString());
-                        }
-                    }
+                    } else // Find first uncompleted paragraph if saved is not available
+                    setActiveIndex(null);
                 }
             } catch (error) {
-                console.error('Failed to fetch initial data:', error);
+                console.error('Error in initial data loading:', error);
             } finally{
                 setIsLoading(false);
             }
@@ -56422,79 +56368,37 @@ function ArticlePage() {
             block: 'center'
         });
     }, []);
-    // Handler for paragraph completion
-    const handleParagraphComplete = (0, _react.useCallback)(async (index)=>{
-        localStorage.removeItem('typedContent');
-        localStorage.removeItem('progress');
-        setShowSuccess(index);
+    // Handle paragraph completion - the main function to update stats
+    const handleParagraphCompleted = async ()=>{
+        if (activeIndex === null || !contentSet || activeIndex >= contentSet.paragraphs.length) return;
+        const paragraphId = contentSet.paragraphs[activeIndex].id;
+        console.log('Completing paragraph:', paragraphId);
         try {
-            if (!contentSet || !contentSet.paragraphs) {
-                console.error('Cannot complete paragraph: Content not loaded');
-                return;
-            }
-            console.log(`Completing paragraph ${index + 1} of ${contentSet.paragraphs.length}`);
-            // Mark paragraph as completed in content service
-            const paragraphId = contentSet.paragraphs[index].id;
-            const updatedContentSet = await (0, _contentService.completeParagraph)(paragraphId);
-            setContentSet(updatedContentSet);
-            // Calculate word count for better tracking
-            const paragraphContent = contentSet.paragraphs[index].content;
-            const wordCount = paragraphContent.trim().split(/\s+/).length;
-            console.log(`Paragraph completed with ${wordCount} words`);
-            setIsTyping(false);
-            // Track completed paragraph in stats - now only tracking words
-            const userStats = await (0, _statsService.trackCompletedParagraph)(contentSet.paragraphs[index].content);
-            console.log('Updated user stats:', userStats);
-            // Update stats in the UI immediately
-            setStats({
-                words: userStats.words
-            });
-            // Force clear any cached data to ensure fresh stats
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                const todayKey = `words_${today}`;
-                const todayWords = localStorage.getItem(todayKey);
-                console.log(`Today's words after paragraph completion: ${todayWords || '0'}`);
-            } catch (e) {
-                console.error('Error checking localStorage stats:', e);
-            }
-            // Trigger a refresh of stats components after a short delay
-            // This delay ensures all database operations have completed
+            // Update progress in Supabase with completeParagraph function
+            // This will also log the typing session via our new sessionService
+            const updatedContent = await (0, _contentService.completeParagraph)(paragraphId);
+            setContentSet(updatedContent);
+            // Clear local storage items for this paragraph
+            localStorage.removeItem('typedContent');
+            localStorage.removeItem('progress');
+            // Update the stats display with a new refresh key
+            setStatsRefreshKey((prev)=>prev + 1);
+            // Show success animation
+            setShowSuccess(activeIndex);
             setTimeout(()=>{
-                console.log('Refreshing stats with new refreshKey');
-                setStatsRefreshKey((prevKey)=>{
-                    const newKey = prevKey + 1;
-                    console.log(`Stats refresh key updated: ${prevKey} -> ${newKey}`);
-                    return newKey;
-                });
-            }, 800); // Increase delay to ensure updates are complete
-            // Set a timeout to move to the next paragraph after showing success message
-            setTimeout(()=>{
-                setActiveIndex(null);
                 setShowSuccess(null);
-                // Check if there's a next paragraph and if it's not already completed
-                if (contentSet && contentSet.paragraphs) {
-                    const nextIndex = index + 1;
-                    if (nextIndex < contentSet.paragraphs.length && !contentSet.paragraphs[nextIndex].completed) {
-                        // Automatically move to the next paragraph
-                        setActiveIndex(nextIndex);
-                        setTypedContent('');
-                        setProgress(0);
-                        setIsTyping(true);
-                        // Scroll to the next paragraph
-                        scrollToParagraph(nextIndex);
-                        console.log(`Moving to next paragraph (index: ${nextIndex})`);
-                    } else console.log('No more uncompleted paragraphs to move to');
-                }
-            }, 1500);
+            }, 2000);
+            // Reset state
+            setTypedContent('');
+            setActiveIndex(null);
+            setProgress(0);
+            setIsTyping(false);
+            // Track time and completion
+            await (0, _statsService.trackCompletedParagraph)(contentSet.paragraphs[activeIndex].content);
         } catch (error) {
             console.error('Error completing paragraph:', error);
         }
-    }, [
-        contentSet,
-        scrollToParagraph,
-        statsRefreshKey
-    ]);
+    };
     // Modified handleKeyPress to use the new completion handler
     const handleKeyPress = (0, _react.useCallback)((e)=>{
         if (activeIndex === null || !contentSet || !contentSet.paragraphs || activeIndex >= contentSet.paragraphs.length) {
@@ -56512,13 +56416,13 @@ function ArticlePage() {
             setTypedContent(newTypedContent);
             const newProgress = newTypedContent.length / currentText.length * 100;
             setProgress(newProgress);
-            if (newTypedContent === currentText) handleParagraphComplete(activeIndex);
+            if (newTypedContent === currentText) handleParagraphCompleted();
         }
     }, [
         activeIndex,
         typedContent,
         contentSet,
-        handleParagraphComplete
+        handleParagraphCompleted
     ]);
     (0, _react.useEffect)(()=>{
         if (isTyping) window.addEventListener('keydown', handleKeyPress);
@@ -56563,7 +56467,7 @@ function ArticlePage() {
             setTypedContent(newTypedContent);
             const newProgress = newTypedContent.length / currentText.length * 100;
             setProgress(newProgress);
-            if (newTypedContent === currentText) handleParagraphComplete(activeIndex);
+            if (newTypedContent === currentText) handleParagraphCompleted();
         }
     };
     // Toggle stats expansion
@@ -56577,16 +56481,19 @@ function ArticlePage() {
             setIsTogglingStats(false);
         }, 500);
     };
-    // Handler for marking wisdom sections as read
+    // Handle wisdom section completion
     const handleWisdomSectionClick = async (sectionId)=>{
-        if (!contentSet || !contentSet.wisdomSections) {
-            console.error('Cannot complete wisdom section: Content not loaded or wisdom sections not available');
-            return;
-        }
+        if (isLoading) return;
+        console.log('Completing wisdom section:', sectionId);
         try {
-            // Mark wisdom section as completed
-            const updatedContentSet = await (0, _contentService.completeWisdomSection)(sectionId);
-            setContentSet(updatedContentSet);
+            // Mark wisdom section as completed in Supabase
+            // This will also log the typing session via our new sessionService
+            const updatedContent = await (0, _contentService.completeWisdomSection)(sectionId);
+            setContentSet(updatedContent);
+            // Update stats display with a new refresh key
+            setStatsRefreshKey((prev)=>prev + 1);
+            // Pause time tracking on wisdom completion
+            (0, _sessionService.pauseTimeTracking)();
         } catch (error) {
             console.error('Error completing wisdom section:', error);
         }
@@ -56640,7 +56547,7 @@ function ArticlePage() {
                         refreshKey: statsRefreshKey
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 519,
+                        lineNumber: 466,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _totalStatsDefault.default), {
@@ -56648,13 +56555,13 @@ function ArticlePage() {
                         refreshKey: statsRefreshKey
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 520,
+                        lineNumber: 467,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 518,
+                lineNumber: 465,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56663,27 +56570,48 @@ function ArticlePage() {
                     refreshKey: statsRefreshKey
                 }, void 0, false, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 523,
+                    lineNumber: 470,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 522,
+                lineNumber: 469,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/pages/ArticlePage.tsx",
-        lineNumber: 517,
+        lineNumber: 464,
         columnNumber: 5
     }, this);
+    // Effect to start time tracking when typing begins - MOVED BEFORE THE CONDITIONAL RETURN
+    (0, _react.useEffect)(()=>{
+        if (isTyping && !allContentCompleted) (0, _sessionService.resumeTimeTracking)();
+        else (0, _sessionService.pauseTimeTracking)();
+    }, [
+        isTyping,
+        allContentCompleted
+    ]);
+    // Reset time tracking when switching to a new article - MOVED BEFORE THE CONDITIONAL RETURN
+    (0, _react.useEffect)(()=>{
+        if (contentSet && contentSet.id) {
+            (0, _sessionService.resetTimeTracking)();
+            (0, _sessionService.startTimeTracking)();
+            return ()=>{
+                // Pause tracking when leaving the page
+                (0, _sessionService.pauseTimeTracking)();
+            };
+        }
+    }, [
+        contentSet?.id
+    ]);
     // Loading state
     if (isLoading || !contentSet) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _loadingAnimationDefault.default), {
         fullScreen: true,
         message: "Straipsnis kraunamas..."
     }, void 0, false, {
         fileName: "src/pages/ArticlePage.tsx",
-        lineNumber: 530,
+        lineNumber: 499,
         columnNumber: 12
     }, this);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("main", {
@@ -56697,14 +56625,14 @@ function ArticlePage() {
                 speed: 0
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 536,
+                lineNumber: 505,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _audioPlayerDefault.default), {
                 defaultVolume: 0.3
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 544,
+                lineNumber: 513,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("header", {
@@ -56726,7 +56654,7 @@ function ArticlePage() {
                         children: "Readleta"
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 547,
+                        lineNumber: 516,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("nav", {
@@ -56734,13 +56662,13 @@ function ArticlePage() {
                         children: "Tik tiems, kurie ie\u0161ko giliau"
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 555,
+                        lineNumber: 524,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 546,
+                lineNumber: 515,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56757,13 +56685,13 @@ function ArticlePage() {
                                     className: `absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 ${isStatsExpanded ? 'scale-x-100' : ''} transition-transform duration-300`
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 568,
+                                    lineNumber: 537,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 563,
+                            lineNumber: 532,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
@@ -56774,13 +56702,13 @@ function ArticlePage() {
                                     className: "absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 572,
+                                    lineNumber: 541,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 570,
+                            lineNumber: 539,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
@@ -56791,24 +56719,24 @@ function ArticlePage() {
                                     className: "absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 576,
+                                    lineNumber: 545,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 574,
+                            lineNumber: 543,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 562,
+                    lineNumber: 531,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 561,
+                lineNumber: 530,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.AnimatePresence), {
@@ -56852,34 +56780,34 @@ function ArticlePage() {
                                         clipRule: "evenodd"
                                     }, void 0, false, {
                                         fileName: "src/pages/ArticlePage.tsx",
-                                        lineNumber: 602,
+                                        lineNumber: 571,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 601,
+                                    lineNumber: 570,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 596,
+                                lineNumber: 565,
                                 columnNumber: 15
                             }, this),
                             statsSection
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 594,
+                        lineNumber: 563,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 584,
+                    lineNumber: 553,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 582,
+                lineNumber: 551,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -56916,7 +56844,7 @@ function ArticlePage() {
                                 children: contentSet.title
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 626,
+                                lineNumber: 595,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -56924,13 +56852,13 @@ function ArticlePage() {
                                 children: contentSet.subtitle
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 629,
+                                lineNumber: 598,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 620,
+                        lineNumber: 589,
                         columnNumber: 9
                     }, this),
                     contentSet.paragraphs.map((paragraph, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56943,12 +56871,12 @@ function ArticlePage() {
                                         children: index + 1
                                     }, void 0, false, {
                                         fileName: "src/pages/ArticlePage.tsx",
-                                        lineNumber: 640,
+                                        lineNumber: 609,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 637,
+                                    lineNumber: 606,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56973,7 +56901,7 @@ function ArticlePage() {
                                                             children: typedContent
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 661,
+                                                            lineNumber: 630,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -56981,7 +56909,7 @@ function ArticlePage() {
                                                             children: paragraph.content.slice(typedContent.length)
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 662,
+                                                            lineNumber: 631,
                                                             columnNumber: 23
                                                         }, this),
                                                         isMobile && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
@@ -56992,7 +56920,7 @@ function ArticlePage() {
                                                             inputMode: "text"
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 666,
+                                                            lineNumber: 635,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
@@ -57001,17 +56929,17 @@ function ArticlePage() {
                                                     children: paragraph.content
                                                 }, void 0, false, {
                                                     fileName: "src/pages/ArticlePage.tsx",
-                                                    lineNumber: 676,
+                                                    lineNumber: 645,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 656,
+                                                lineNumber: 625,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 655,
+                                            lineNumber: 624,
                                             columnNumber: 15
                                         }, this),
                                         showSuccess === index && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -57033,12 +56961,12 @@ function ArticlePage() {
                                                 children: "Puikiai"
                                             }, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 689,
+                                                lineNumber: 658,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 683,
+                                            lineNumber: 652,
                                             columnNumber: 17
                                         }, this),
                                         activeIndex === index && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57050,31 +56978,31 @@ function ArticlePage() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 698,
+                                                lineNumber: 667,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 697,
+                                            lineNumber: 666,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 648,
+                                    lineNumber: 617,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, paragraph.id, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 635,
+                            lineNumber: 604,
                             columnNumber: 11
                         }, this)),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                         className: "w-full h-px bg-gray-200 my-6"
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 709,
+                        lineNumber: 678,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -57125,12 +57053,12 @@ function ArticlePage() {
                                             className: `${textColorClass} shrink-0 mt-1`,
                                             children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(SectionIcon, {}, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 741,
+                                                lineNumber: 710,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 740,
+                                            lineNumber: 709,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57144,7 +57072,7 @@ function ArticlePage() {
                                                             children: section.title
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 745,
+                                                            lineNumber: 714,
                                                             columnNumber: 23
                                                         }, this),
                                                         section.completed && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -57152,13 +57080,13 @@ function ArticlePage() {
                                                             children: "Perskaityta \u2713"
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 747,
+                                                            lineNumber: 716,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "src/pages/ArticlePage.tsx",
-                                                    lineNumber: 744,
+                                                    lineNumber: 713,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -57166,36 +57094,36 @@ function ArticlePage() {
                                                     children: section.content
                                                 }, void 0, false, {
                                                     fileName: "src/pages/ArticlePage.tsx",
-                                                    lineNumber: 750,
+                                                    lineNumber: 719,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 743,
+                                            lineNumber: 712,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 739,
+                                    lineNumber: 708,
                                     columnNumber: 17
                                 }, this)
                             }, section.id, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 730,
+                                lineNumber: 699,
                                 columnNumber: 15
                             }, this);
                         })
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 712,
+                        lineNumber: 681,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 613,
+                lineNumber: 582,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.AnimatePresence), {
@@ -57224,7 +57152,7 @@ function ArticlePage() {
                                 children: "Sekanti serija"
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 775,
+                                lineNumber: 744,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("svg", {
@@ -57238,38 +57166,38 @@ function ArticlePage() {
                                     clipRule: "evenodd"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 777,
+                                    lineNumber: 746,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 776,
+                                lineNumber: 745,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 771,
+                        lineNumber: 740,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 764,
+                    lineNumber: 733,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 762,
+                lineNumber: 731,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/pages/ArticlePage.tsx",
-        lineNumber: 534,
+        lineNumber: 503,
         columnNumber: 5
     }, this);
 }
-_s(ArticlePage, "s6yU5DRqrkXPXHtQPkg3lky4Rqg=");
+_s(ArticlePage, "ErVPfo15XXHOi4eVUmrhOm//GZc=");
 _c = ArticlePage;
 // Add these styles to your CSS file
 const styles = `
@@ -57315,7 +57243,7 @@ $RefreshReg$(_c, "ArticlePage");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","../styles/ArticlePage.css":"fFc7x","../components/StatsPanel":"8q41N","../components/AudioPlayer":"iGyvp","../services/statsService":"hTmM7","../components/Icons":"hpaIY","../utils/characterUtils":"l3AXT","../components/WeeklyPerformanceChart":"iNIIe","../components/TotalStats":"aud5a","../components/DailyStats":"6cybX","../services/contentService":"2I4vR","../components/LoadingAnimation":"8jtK0","chart.js":"6U2cz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"fFc7x":[function() {},{}],"8q41N":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","../styles/ArticlePage.css":"fFc7x","../components/StatsPanel":"8q41N","../components/AudioPlayer":"iGyvp","../services/statsService":"hTmM7","../components/Icons":"hpaIY","../utils/characterUtils":"l3AXT","../components/WeeklyPerformanceChart":"iNIIe","../components/TotalStats":"aud5a","../components/DailyStats":"6cybX","../services/contentService":"2I4vR","../components/LoadingAnimation":"8jtK0","../services/sessionService":"9Rug3","chart.js":"6U2cz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"fFc7x":[function() {},{}],"8q41N":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$21fe = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$21fe.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -57722,6 +57650,11 @@ $RefreshReg$(_c, "AudioPlayer");
 },{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../styles/AudioPlayer.css":"4aImU","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"4aImU":[function() {},{}],"hTmM7":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+/**
+ * Format a date to YYYY-MM-DD string format
+ * @param date The date to format
+ * @returns The formatted date string
+ */ parcelHelpers.export(exports, "formatDateToYYYYMMDD", ()=>formatDateToYYYYMMDD);
 // Format time from seconds to "mm:ss" format
 parcelHelpers.export(exports, "formatTime", ()=>formatTime);
 // Set current user - this is not used anymore, as we use localStorage directly
@@ -57741,6 +57674,9 @@ parcelHelpers.export(exports, "calculateSpeed", ()=>calculateSpeed);
 // Get weekly stats for chart
 parcelHelpers.export(exports, "getWeeklyStatsForChart", ()=>getWeeklyStatsForChart);
 var _supabaseClient = require("./supabaseClient");
+function formatDateToYYYYMMDD(date) {
+    return date.toISOString().split('T')[0];
+}
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
@@ -71964,6 +71900,7 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "useWeeklyStats", ()=>useWeeklyStats);
 var _react = require("react");
 var _weeklyStatsService = require("../services/weeklyStatsService");
+var _sessionService = require("../services/sessionService");
 function useWeeklyStats() {
     const [weeklyStats, setWeeklyStats] = (0, _react.useState)(null);
     const [loading, setLoading] = (0, _react.useState)(true);
@@ -72040,7 +71977,7 @@ function useWeeklyStats() {
     const currentWeek = (0, _react.useCallback)(()=>{
         setWeekOffset(0);
     }, []);
-    // Fetch weekly stats data
+    // Fetch weekly stats data from our new session service
     const fetchWeeklyStats = (0, _react.useCallback)(async (forceRefresh = false)=>{
         // Skip if a fetch is already in progress
         if (isFetchingRef.current) {
@@ -72060,34 +71997,50 @@ function useWeeklyStats() {
         lastRequestedOffsetRef.current = weekOffset;
         try {
             console.log(`Fetching weekly stats with offset: ${weekOffset}${forceRefresh ? ' (forced refresh)' : ''}`);
-            // Clear localStorage cache for today to force fetching fresh data
-            if (forceRefresh) try {
-                const today = new Date().toISOString().split('T')[0];
-                const cacheKey = `stats_cache_${weekOffset}_${today}`;
-                localStorage.removeItem(cacheKey);
-                console.log('Cleared cache for weekly stats to force refresh');
-            } catch (e) {
-                console.error('Error clearing cache:', e);
-            }
-            const stats = await (0, _weeklyStatsService.getWeeklyStats)(weekOffset);
+            // Calculate date range for the specified week
+            const { start, end } = (0, _weeklyStatsService.getWeekDates)(weekOffset);
+            console.log(`Date range: ${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}`);
+            // Fetch data from our new session service
+            const weeklyData = await (0, _sessionService.fetchWeeklyWordCounts)(start, end);
             // Only update state if the week offset hasn't changed during the fetch
-            // This prevents race conditions where an older fetch overwrites newer data
             if (lastRequestedOffsetRef.current === weekOffset) {
+                // Convert to the WeeklyStats format expected by the components
+                const days = weeklyData.map((day)=>{
+                    // Convert string date to Date object
+                    const dayDate = new Date(day.date);
+                    return {
+                        date: dayDate,
+                        words: day.count,
+                        productivityScore: day.count > 0 ? 50 : 0 // Simple score between 0-100
+                    };
+                });
+                // Calculate most productive day
+                let maxWords = 0;
+                let mostProductiveDayIndex = -1;
+                days.forEach((day, index)=>{
+                    if (day.words > maxWords) {
+                        maxWords = day.words;
+                        mostProductiveDayIndex = index;
+                    }
+                });
+                // Calculate streak (consecutive days with activity)
+                const streak = calculateStreak(days, weekOffset === 0 ? getCurrentDayIndex() : 6);
+                const stats = {
+                    days,
+                    streak,
+                    mostProductiveDayIndex,
+                    weekStartDate: start,
+                    weekEndDate: end
+                };
                 // Log the stats for debugging
                 const totalWords = stats.days.reduce((sum, day)=>sum + (day.words || 0), 0);
-                console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${stats.mostProductiveDayIndex}`);
+                console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${mostProductiveDayIndex}`);
                 setWeeklyStats(stats);
                 setLastFetchTime(now);
-                // Set week start and end dates
-                if (stats.days.length > 0) {
-                    const startDate = new Date(stats.days[0].date);
-                    const endDate = new Date(stats.days[stats.days.length - 1].date);
-                    setWeekDates({
-                        start: startDate,
-                        end: endDate
-                    });
-                    console.log(`Week date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
-                }
+                setWeekDates({
+                    start,
+                    end
+                });
                 setError(null);
             } else console.log('Week offset changed during fetch, discarding results');
         } catch (err) {
@@ -72105,51 +72058,59 @@ function useWeeklyStats() {
         weeklyStats,
         lastFetchTime
     ]);
+    // Get current day index (0 = Monday, 6 = Sunday)
+    const getCurrentDayIndex = (0, _react.useCallback)(()=>{
+        // Convert to Monday=0, Sunday=6 format
+        return (new Date().getDay() + 6) % 7;
+    }, []);
+    // Calculate current streak
+    const calculateStreak = (0, _react.useCallback)((days, currentDayIndex)=>{
+        let streak = 0;
+        // Start from current day and look backwards
+        for(let i = currentDayIndex; i >= 0; i--){
+            if (days[i] && days[i].productivityScore > 0) streak++;
+            else break; // Streak is broken
+        }
+        return streak;
+    }, []);
     // Function to manually refresh stats
     const refreshStats = (0, _react.useCallback)(()=>{
         console.log('Manual refresh of weekly stats requested');
-        // Force refresh of localStorage data first
-        try {
-            const userId = localStorage.getItem('current_user_id');
-            if (userId) {
-                // Clear any localStorage cache for the current week to force fresh data
-                const today = new Date().toISOString().split('T')[0];
-                const cacheKey = `stats_cache_${weekOffset}_${today}`;
-                localStorage.removeItem(cacheKey);
-                // Get today's date in ISO format (YYYY-MM-DD)
-                const todayKey = `words_${today}`;
-                // Re-read today's word count from localStorage
-                const todayWords = localStorage.getItem(todayKey);
-                console.log(`Today's words before refresh: ${todayWords || '0'}`);
-                // Clear isFetching flag to ensure we fetch new data
-                isFetchingRef.current = false;
-            }
-        } catch (e) {
-            console.error('Error clearing stats cache:', e);
-        }
         // Force refresh with a slight delay to allow any pending state updates
         setTimeout(()=>{
             fetchWeeklyStats(true); // Force refresh 
         }, 300);
     }, [
-        fetchWeeklyStats,
-        weekOffset
+        fetchWeeklyStats
     ]);
     // Fetch stats on mount and when weekOffset changes
     (0, _react.useEffect)(()=>{
         let isMounted = true;
         const fetchData = async ()=>{
-            if (!isMounted) return;
-            console.log('Initial fetch of weekly stats');
-            await fetchWeeklyStats();
+            if (isMounted) await fetchWeeklyStats();
         };
         fetchData();
         return ()=>{
             isMounted = false;
         };
     }, [
-        weekOffset,
-        fetchWeeklyStats
+        fetchWeeklyStats,
+        weekOffset
+    ]);
+    // Set up stats refresh when localStorage changes (for real-time updates)
+    (0, _react.useEffect)(()=>{
+        const handleStorageChange = (e)=>{
+            if (e.key === 'stats_last_updated') {
+                console.log('Stats updated in localStorage, refreshing weekly stats');
+                refreshStats();
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return ()=>{
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [
+        refreshStats
     ]);
     return {
         weeklyStats,
@@ -72172,7 +72133,7 @@ function useWeeklyStats() {
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react":"jMk1U","../services/weeklyStatsService":"2q4G4","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2q4G4":[function(require,module,exports,__globalThis) {
+},{"react":"jMk1U","../services/weeklyStatsService":"2q4G4","../services/sessionService":"9Rug3","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2q4G4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "dayNames", ()=>dayNames);
@@ -72448,7 +72409,292 @@ function processStatsData(data, weekOffset) {
 },{"7ca1074d17820a7c":"e7lNH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"e7lNH":[function(require,module,exports,__globalThis) {
 module.exports = Promise.resolve(module.bundle.root("jgwHA"));
 
-},{"jgwHA":"jgwHA"}],"aud5a":[function(require,module,exports,__globalThis) {
+},{"jgwHA":"jgwHA"}],"9Rug3":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * Count words in a text
+ * @param text The text to count words in
+ * @returns The number of words
+ */ parcelHelpers.export(exports, "countWords", ()=>countWords);
+/**
+ * Starts tracking time for the current typing session
+ */ parcelHelpers.export(exports, "startTimeTracking", ()=>startTimeTracking);
+/**
+ * Pauses time tracking for the current typing session
+ */ parcelHelpers.export(exports, "pauseTimeTracking", ()=>pauseTimeTracking);
+/**
+ * Resumes time tracking for the current typing session
+ */ parcelHelpers.export(exports, "resumeTimeTracking", ()=>resumeTimeTracking);
+/**
+ * Resets time tracking for a new typing session
+ */ parcelHelpers.export(exports, "resetTimeTracking", ()=>resetTimeTracking);
+/**
+ * Gets the current tracked time in seconds
+ */ parcelHelpers.export(exports, "getTrackedTimeInSeconds", ()=>getTrackedTimeInSeconds);
+/**
+ * Save a typing session to Supabase
+ * @param originalText The original text that was typed
+ * @param typedText The text that the user typed
+ * @param paragraphId Optional ID of the paragraph that was typed
+ * @param wisdomId Optional ID of the wisdom section that was typed
+ * @returns Promise with success/failure
+ */ parcelHelpers.export(exports, "saveTypingSession", ()=>saveTypingSession);
+/**
+ * Fetch today's total word count for the current user
+ * @returns Promise with the total words typed today
+ */ parcelHelpers.export(exports, "fetchTodaysWordCount", ()=>fetchTodaysWordCount);
+/**
+ * Fetch today's time spent typing in seconds for the current user
+ * @returns Promise with the time spent typing today in seconds
+ */ parcelHelpers.export(exports, "fetchTodaysTimeSpent", ()=>fetchTodaysTimeSpent);
+/**
+ * Fetch weekly word counts for the current user
+ * @param startDate The start date of the week (optional, defaults to 7 days ago)
+ * @param endDate The end date of the week (optional, defaults to today)
+ * @returns Promise with an array of daily word counts
+ */ parcelHelpers.export(exports, "fetchWeeklyWordCounts", ()=>fetchWeeklyWordCounts);
+/**
+ * Fetch weekly time spent typing in seconds for the current user
+ * @param startDate The start date of the week (optional, defaults to 7 days ago)
+ * @param endDate The end date of the week (optional, defaults to today)
+ * @returns Promise with an array of daily time spent in seconds
+ */ parcelHelpers.export(exports, "fetchWeeklyTimeSpent", ()=>fetchWeeklyTimeSpent);
+/**
+ * Fetch all-time total word count for the current user
+ * @returns Promise with the total words typed all-time
+ */ parcelHelpers.export(exports, "fetchAllTimeWordCount", ()=>fetchAllTimeWordCount);
+/**
+ * Directly log a word count (for fixed counts per paragraph/wisdom)
+ * @param wordCount The number of words to log
+ * @returns Promise with success/failure
+ */ parcelHelpers.export(exports, "logWordCount", ()=>logWordCount);
+var _supabaseClient = require("./supabaseClient");
+var _statsService = require("./statsService");
+function countWords(text) {
+    if (!text || text.trim() === '') return 0;
+    return text.trim().split(/\s+/).length;
+}
+/**
+ * Time tracking variables
+ */ let sessionStartTime = null;
+let accumulatedTimeMs = 0;
+let isTracking = false;
+let trackingInterval = null;
+function startTimeTracking() {
+    if (isTracking) return; // Already tracking
+    sessionStartTime = Date.now();
+    isTracking = true;
+    // Set up interval to periodically update accumulated time
+    // This helps ensure we don't lose time if the app crashes
+    trackingInterval = setInterval(()=>{
+        if (sessionStartTime) {
+            accumulatedTimeMs += Date.now() - sessionStartTime;
+            sessionStartTime = Date.now();
+        }
+    }, 30000); // Update every 30 seconds
+}
+function pauseTimeTracking() {
+    if (!isTracking || !sessionStartTime) return;
+    // Add the current session time to accumulated time
+    accumulatedTimeMs += Date.now() - sessionStartTime;
+    sessionStartTime = null;
+    isTracking = false;
+    // Clear the interval if it exists
+    if (trackingInterval) {
+        clearInterval(trackingInterval);
+        trackingInterval = null;
+    }
+}
+function resumeTimeTracking() {
+    if (isTracking) return;
+    startTimeTracking();
+}
+function resetTimeTracking() {
+    pauseTimeTracking(); // Make sure tracking is stopped
+    accumulatedTimeMs = 0;
+    sessionStartTime = null;
+    isTracking = false;
+}
+function getTrackedTimeInSeconds() {
+    let totalMs = accumulatedTimeMs;
+    // Add current session time if actively tracking
+    if (isTracking && sessionStartTime) totalMs += Date.now() - sessionStartTime;
+    return Math.floor(totalMs / 1000);
+}
+async function saveTypingSession(originalText, typedText, paragraphId, wisdomId) {
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) {
+            console.error('No user ID found, cannot save typing session');
+            return false;
+        }
+        const wordCount = countWords(typedText);
+        const timeSpentSeconds = getTrackedTimeInSeconds();
+        console.log(`Saving typing session with ${wordCount} words for user ${userId}`);
+        const newSession = {
+            user_id: userId,
+            original_text: originalText,
+            typed_text: typedText,
+            word_count: wordCount,
+            timestamp: new Date().toISOString(),
+            paragraph_id: paragraphId,
+            wisdom_id: wisdomId,
+            time_spent_seconds: timeSpentSeconds
+        };
+        const { error } = await (0, _supabaseClient.supabase).from('sessions').insert(newSession);
+        if (error) {
+            console.error('Error saving typing session:', error.message, error.details);
+            return false;
+        }
+        console.log('Successfully saved typing session');
+        resetTimeTracking();
+        return true;
+    } catch (error) {
+        console.error('Exception in saveTypingSession:', error);
+        return false;
+    }
+}
+async function fetchTodaysWordCount() {
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) return 0;
+        const today = (0, _statsService.formatDateToYYYYMMDD)(new Date());
+        const { data, error } = await (0, _supabaseClient.supabase).from('daily_totals').select('total_words').eq('user_id', userId).eq('date', today).maybeSingle();
+        if (error) {
+            console.error('Error fetching today\'s word count:', error.message);
+            return 0;
+        }
+        return data?.total_words || 0;
+    } catch (error) {
+        console.error('Exception in fetchTodaysWordCount:', error);
+        return 0;
+    }
+}
+async function fetchTodaysTimeSpent() {
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) return 0;
+        const today = (0, _statsService.formatDateToYYYYMMDD)(new Date());
+        const { data, error } = await (0, _supabaseClient.supabase).from('daily_totals').select('time_spent_seconds').eq('user_id', userId).eq('date', today).maybeSingle();
+        if (error) {
+            console.error('Error fetching today\'s time spent:', error.message);
+            return 0;
+        }
+        return data?.time_spent_seconds || 0;
+    } catch (error) {
+        console.error('Exception in fetchTodaysTimeSpent:', error);
+        return 0;
+    }
+}
+async function fetchWeeklyWordCounts(startDate, endDate) {
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) return [];
+        // Default to last 7 days if no dates provided
+        const end = endDate || new Date();
+        const start = startDate || new Date(end);
+        if (!startDate) start.setDate(start.getDate() - 6); // 7 days including today
+        const startStr = (0, _statsService.formatDateToYYYYMMDD)(start);
+        const endStr = (0, _statsService.formatDateToYYYYMMDD)(end);
+        const { data, error } = await (0, _supabaseClient.supabase).from('daily_totals').select('date, total_words').eq('user_id', userId).gte('date', startStr).lte('date', endStr).order('date');
+        if (error) {
+            console.error('Error fetching weekly word counts:', error.message);
+            return [];
+        }
+        // Create array with all dates in range (including zeros for days with no activity)
+        const result = [];
+        const current = new Date(start);
+        while(current <= end){
+            const dateStr = (0, _statsService.formatDateToYYYYMMDD)(current);
+            const existingData = data?.find((d)=>d.date === dateStr);
+            result.push({
+                date: dateStr,
+                count: existingData ? existingData.total_words : 0
+            });
+            current.setDate(current.getDate() + 1);
+        }
+        return result;
+    } catch (error) {
+        console.error('Exception in fetchWeeklyWordCounts:', error);
+        return [];
+    }
+}
+async function fetchWeeklyTimeSpent(startDate, endDate) {
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) return [];
+        // Default to last 7 days if no dates provided
+        const end = endDate || new Date();
+        const start = startDate || new Date(end);
+        if (!startDate) start.setDate(start.getDate() - 6); // 7 days including today
+        const startStr = (0, _statsService.formatDateToYYYYMMDD)(start);
+        const endStr = (0, _statsService.formatDateToYYYYMMDD)(end);
+        const { data, error } = await (0, _supabaseClient.supabase).from('daily_totals').select('date, time_spent_seconds').eq('user_id', userId).gte('date', startStr).lte('date', endStr).order('date');
+        if (error) {
+            console.error('Error fetching weekly time spent:', error.message);
+            return [];
+        }
+        // Create array with all dates in range (including zeros for days with no activity)
+        const result = [];
+        const current = new Date(start);
+        while(current <= end){
+            const dateStr = (0, _statsService.formatDateToYYYYMMDD)(current);
+            const existingData = data?.find((d)=>d.date === dateStr);
+            result.push({
+                date: dateStr,
+                count: existingData ? existingData.time_spent_seconds : 0
+            });
+            current.setDate(current.getDate() + 1);
+        }
+        return result;
+    } catch (error) {
+        console.error('Exception in fetchWeeklyTimeSpent:', error);
+        return [];
+    }
+}
+async function fetchAllTimeWordCount() {
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) return 0;
+        const { data, error } = await (0, _supabaseClient.supabase).from('daily_totals').select('total_words').eq('user_id', userId);
+        if (error) {
+            console.error('Error fetching all-time word count:', error.message);
+            return 0;
+        }
+        return data ? data.reduce((sum, entry)=>sum + entry.total_words, 0) : 0;
+    } catch (error) {
+        console.error('Exception in fetchAllTimeWordCount:', error);
+        return 0;
+    }
+}
+async function logWordCount(wordCount) {
+    if (!wordCount || wordCount <= 0) return false;
+    try {
+        const userId = (0, _supabaseClient.getCurrentUserId)();
+        if (!userId) return false;
+        // Create a minimal session record
+        const session = {
+            user_id: userId,
+            original_text: "",
+            typed_text: "",
+            word_count: wordCount,
+            time_spent_seconds: 0,
+            timestamp: new Date().toISOString()
+        };
+        const { error } = await (0, _supabaseClient.supabase).from('sessions').insert(session);
+        if (error) {
+            console.error('Error logging word count:', error.message);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Exception in logWordCount:', error);
+        return false;
+    }
+}
+
+},{"./supabaseClient":"jgwHA","./statsService":"hTmM7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aud5a":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$1bc4 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$1bc4.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -72461,7 +72707,7 @@ parcelHelpers.defineInteropFlag(exports);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
 var _reactDefault = parcelHelpers.interopDefault(_react);
-var _statsService = require("../services/statsService");
+var _sessionService = require("../services/sessionService");
 var _framerMotion = require("framer-motion");
 var _s = $RefreshSig$();
 const TotalStats = ({ className = '', refreshKey = 0 })=>{
@@ -72471,8 +72717,8 @@ const TotalStats = ({ className = '', refreshKey = 0 })=>{
     const fetchTotalStats = (0, _reactDefault.default).useCallback(async ()=>{
         try {
             setIsLoading(true);
-            const userStats = await (0, _statsService.getUserStats)();
-            setWordCount(userStats?.words || 0);
+            const totalWords = await (0, _sessionService.fetchAllTimeWordCount)();
+            setWordCount(totalWords);
         } catch (error) {
             console.log('Error fetching total stats:', error);
             setWordCount(0);
@@ -72486,7 +72732,10 @@ const TotalStats = ({ className = '', refreshKey = 0 })=>{
         fetchTotalStats
     ]);
     (0, _reactDefault.default).useEffect(()=>{
-        if (refreshKey > 0) fetchTotalStats();
+        if (refreshKey > 0) {
+            console.log('TotalStats: refreshKey changed, fetching new stats');
+            fetchTotalStats();
+        }
     }, [
         refreshKey,
         fetchTotalStats
@@ -72499,7 +72748,7 @@ const TotalStats = ({ className = '', refreshKey = 0 })=>{
                 children: "Viso"
             }, void 0, false, {
                 fileName: "src/components/TotalStats.tsx",
-                lineNumber: 39,
+                lineNumber: 40,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -72521,7 +72770,7 @@ const TotalStats = ({ className = '', refreshKey = 0 })=>{
                         children: "\u017Dod\u017Ei\u0173 perra\u0161yta"
                     }, void 0, false, {
                         fileName: "src/components/TotalStats.tsx",
-                        lineNumber: 47,
+                        lineNumber: 48,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -72529,7 +72778,7 @@ const TotalStats = ({ className = '', refreshKey = 0 })=>{
                         children: (wordCount || 0).toLocaleString()
                     }, void 0, false, {
                         fileName: "src/components/TotalStats.tsx",
-                        lineNumber: 48,
+                        lineNumber: 49,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -72537,19 +72786,19 @@ const TotalStats = ({ className = '', refreshKey = 0 })=>{
                         children: "Viso nuo prad\u017Eios"
                     }, void 0, false, {
                         fileName: "src/components/TotalStats.tsx",
-                        lineNumber: 49,
+                        lineNumber: 50,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/TotalStats.tsx",
-                lineNumber: 41,
+                lineNumber: 42,
                 columnNumber: 7
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/TotalStats.tsx",
-        lineNumber: 38,
+        lineNumber: 39,
         columnNumber: 5
     }, undefined);
 };
@@ -72564,7 +72813,7 @@ $RefreshReg$(_c, "TotalStats");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/statsService":"hTmM7","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"6cybX":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/sessionService":"9Rug3","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"6cybX":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$5ca7 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$5ca7.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -72577,7 +72826,7 @@ parcelHelpers.defineInteropFlag(exports);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
 var _reactDefault = parcelHelpers.interopDefault(_react);
-var _statsService = require("../services/statsService");
+var _sessionService = require("../services/sessionService");
 var _framerMotion = require("framer-motion");
 var _s = $RefreshSig$();
 const DailyStats = ({ className = '', refreshKey = 0 })=>{
@@ -72587,8 +72836,8 @@ const DailyStats = ({ className = '', refreshKey = 0 })=>{
     const fetchDailyStats = (0, _reactDefault.default).useCallback(async ()=>{
         try {
             setIsLoading(true);
-            const userStats = await (0, _statsService.getTodayStats)();
-            setWordCount(userStats?.words || 0);
+            const todayWords = await (0, _sessionService.fetchTodaysWordCount)();
+            setWordCount(todayWords);
         } catch (error) {
             console.log('Error fetching daily stats:', error);
             setWordCount(0);
@@ -72602,7 +72851,10 @@ const DailyStats = ({ className = '', refreshKey = 0 })=>{
         fetchDailyStats
     ]);
     (0, _reactDefault.default).useEffect(()=>{
-        if (refreshKey > 0) fetchDailyStats();
+        if (refreshKey > 0) {
+            console.log('DailyStats: refreshKey changed, fetching new stats');
+            fetchDailyStats();
+        }
     }, [
         refreshKey,
         fetchDailyStats
@@ -72615,7 +72867,7 @@ const DailyStats = ({ className = '', refreshKey = 0 })=>{
                 children: "\u0160iandien"
             }, void 0, false, {
                 fileName: "src/components/DailyStats.tsx",
-                lineNumber: 39,
+                lineNumber: 40,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -72637,7 +72889,7 @@ const DailyStats = ({ className = '', refreshKey = 0 })=>{
                         children: "\u017Dod\u017Ei\u0173 perra\u0161yta"
                     }, void 0, false, {
                         fileName: "src/components/DailyStats.tsx",
-                        lineNumber: 47,
+                        lineNumber: 48,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -72645,7 +72897,7 @@ const DailyStats = ({ className = '', refreshKey = 0 })=>{
                         children: (wordCount || 0).toLocaleString()
                     }, void 0, false, {
                         fileName: "src/components/DailyStats.tsx",
-                        lineNumber: 48,
+                        lineNumber: 49,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -72653,19 +72905,19 @@ const DailyStats = ({ className = '', refreshKey = 0 })=>{
                         children: "\u0160iandien"
                     }, void 0, false, {
                         fileName: "src/components/DailyStats.tsx",
-                        lineNumber: 49,
+                        lineNumber: 50,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/DailyStats.tsx",
-                lineNumber: 41,
+                lineNumber: 42,
                 columnNumber: 7
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/DailyStats.tsx",
-        lineNumber: 38,
+        lineNumber: 39,
         columnNumber: 5
     }, undefined);
 };
@@ -72680,7 +72932,7 @@ $RefreshReg$(_c, "DailyStats");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/statsService":"hTmM7","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2I4vR":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/sessionService":"9Rug3","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2I4vR":[function(require,module,exports,__globalThis) {
 // This service manages content fetching and tracking for paragraphs and wisdom sections
 // Types for content structure
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -72816,15 +73068,22 @@ function getDefaultContent() {
     };
 }
 async function completeParagraph(paragraphId) {
-    // Import Supabase client to avoid circular dependencies
-    const { getCurrentUserId, updateContentProgress, logWordCount } = await require("19d69dee685b5f02");
+    // Import dependencies to avoid circular references
+    const { getCurrentUserId, updateContentProgress } = await require("19d69dee685b5f02");
+    const { saveTypingSession } = await require("ac21bec1ebdafb18");
     // Get the current user ID
     const userId = getCurrentUserId();
     if (!userId) {
         console.error('User not authenticated, cannot update progress');
         throw new Error('User not authenticated');
     }
-    // Save to localStorage immediately for better reliability
+    // Get the paragraph content from our local state
+    let paragraphContent = '';
+    if (currentContentSet) {
+        const paragraph = currentContentSet.paragraphs.find((p)=>p.id === paragraphId);
+        if (paragraph) paragraphContent = paragraph.content;
+    }
+    // Save to localStorage for immediate feedback
     try {
         const localKey = `paragraph_${paragraphId}_completed`;
         localStorage.setItem(localKey, 'true');
@@ -72838,11 +73097,11 @@ async function completeParagraph(paragraphId) {
         if (!success) console.error('Failed to update paragraph completion in database');
         else {
             console.log('Successfully marked paragraph as completed in Supabase');
-            // Use a fixed word count per paragraph to ensure consistency
-            // Instead of calculating based on actual text which can lead to double-counting
-            const FIXED_WORDS_PER_PARAGRAPH = 8;
-            await logWordCount(FIXED_WORDS_PER_PARAGRAPH);
-            console.log(`Logged fixed word count of ${FIXED_WORDS_PER_PARAGRAPH} words for completed paragraph`);
+            // Save the typing session to Supabase
+            // For paragraph completion, we count the user having typed the full text
+            await saveTypingSession(paragraphContent, paragraphContent, paragraphId, undefined // No wisdom ID for paragraphs
+            );
+            console.log('Saved typing session for paragraph completion');
         }
     } catch (error) {
         console.error('Error updating paragraph completion:', error);
@@ -72859,15 +73118,22 @@ async function completeParagraph(paragraphId) {
     return currentContentSet || getDefaultContent();
 }
 async function completeWisdomSection(sectionId) {
-    // Import Supabase client to avoid circular dependencies
-    const { getCurrentUserId, updateContentProgress, logWordCount } = await require("19d69dee685b5f02");
+    // Import dependencies to avoid circular references
+    const { getCurrentUserId, updateContentProgress } = await require("19d69dee685b5f02");
+    const { saveTypingSession } = await require("ac21bec1ebdafb18");
     // Get the current user ID
     const userId = getCurrentUserId();
     if (!userId) {
         console.error('User not authenticated, cannot update progress');
         throw new Error('User not authenticated');
     }
-    // Save to localStorage immediately for better reliability
+    // Get the wisdom content from our local state
+    let wisdomContent = '';
+    if (currentContentSet) {
+        const wisdom = currentContentSet.wisdomSections.find((w)=>w.id === sectionId);
+        if (wisdom) wisdomContent = wisdom.content;
+    }
+    // Save to localStorage for immediate feedback
     try {
         const localKey = `wisdom_${sectionId}_completed`;
         localStorage.setItem(localKey, 'true');
@@ -72881,10 +73147,11 @@ async function completeWisdomSection(sectionId) {
         if (!success) console.error('Failed to update wisdom section completion in database');
         else {
             console.log('Successfully marked wisdom section as completed in Supabase');
-            // Use a fixed word count per wisdom section
-            const FIXED_WORDS_PER_WISDOM = 10;
-            await logWordCount(FIXED_WORDS_PER_WISDOM);
-            console.log(`Logged fixed word count of ${FIXED_WORDS_PER_WISDOM} words for completed wisdom section`);
+            // Save the typing session to Supabase
+            // For wisdom completion, we count the user having typed the full text
+            await saveTypingSession(wisdomContent, wisdomContent, undefined, sectionId // Reference to the wisdom section
+            );
+            console.log('Saved typing session for wisdom section completion');
         }
     } catch (error) {
         console.error('Error updating wisdom section completion:', error);
@@ -72907,7 +73174,7 @@ function isContentSetCompleted() {
     return allParagraphsCompleted && wisdomSectionCompleted;
 }
 
-},{"19d69dee685b5f02":"e7lNH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iDC1z":[function(require,module,exports,__globalThis) {
+},{"19d69dee685b5f02":"e7lNH","ac21bec1ebdafb18":"hD5tF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iDC1z":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$f472 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$f472.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -73059,6 +73326,6 @@ exports.default = withLoadingAnimation;
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["g0ov7","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:5000")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["7KwkS","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:1234")
 
 //# sourceMappingURL=retype_pro.6efbc4f8.js.map

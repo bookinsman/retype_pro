@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { WeeklyStats, getWeeklyStats, dayNames } from '../services/weeklyStatsService';
+import { WeeklyStats, dayNames, DailyStats, getWeekDates } from '../services/weeklyStatsService';
+import { fetchWeeklyWordCounts } from '../services/sessionService';
 
 interface UseWeeklyStatsReturn {
   weeklyStats: WeeklyStats | null;
@@ -88,7 +89,7 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     setWeekOffset(0);
   }, []);
 
-  // Fetch weekly stats data
+  // Fetch weekly stats data from our new session service
   const fetchWeeklyStats = useCallback(async (forceRefresh = false) => {
     // Skip if a fetch is already in progress
     if (isFetchingRef.current) {
@@ -113,38 +114,55 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     try {
       console.log(`Fetching weekly stats with offset: ${weekOffset}${forceRefresh ? ' (forced refresh)' : ''}`);
       
-      // Clear localStorage cache for today to force fetching fresh data
-      if (forceRefresh) {
-        try {
-          const today = new Date().toISOString().split('T')[0];
-          const cacheKey = `stats_cache_${weekOffset}_${today}`;
-          localStorage.removeItem(cacheKey);
-          console.log('Cleared cache for weekly stats to force refresh');
-        } catch (e) {
-          console.error('Error clearing cache:', e);
-        }
-      }
+      // Calculate date range for the specified week
+      const { start, end } = getWeekDates(weekOffset);
+      console.log(`Date range: ${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}`);
       
-      const stats = await getWeeklyStats(weekOffset);
+      // Fetch data from our new session service
+      const weeklyData = await fetchWeeklyWordCounts(start, end);
       
       // Only update state if the week offset hasn't changed during the fetch
-      // This prevents race conditions where an older fetch overwrites newer data
       if (lastRequestedOffsetRef.current === weekOffset) {
+        // Convert to the WeeklyStats format expected by the components
+        const days: DailyStats[] = weeklyData.map((day) => {
+          // Convert string date to Date object
+          const dayDate = new Date(day.date);
+          return {
+            date: dayDate, // Date object required by DailyStats interface
+            words: day.count,
+            productivityScore: day.count > 0 ? 50 : 0 // Simple score between 0-100
+          };
+        });
+        
+        // Calculate most productive day
+        let maxWords = 0;
+        let mostProductiveDayIndex = -1;
+        
+        days.forEach((day, index) => {
+          if (day.words > maxWords) {
+            maxWords = day.words;
+            mostProductiveDayIndex = index;
+          }
+        });
+        
+        // Calculate streak (consecutive days with activity)
+        const streak = calculateStreak(days, weekOffset === 0 ? getCurrentDayIndex() : 6);
+        
+        const stats: WeeklyStats = {
+          days,
+          streak,
+          mostProductiveDayIndex,
+          weekStartDate: start,
+          weekEndDate: end
+        };
+        
         // Log the stats for debugging
         const totalWords = stats.days.reduce((sum, day) => sum + (day.words || 0), 0);
-        console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${stats.mostProductiveDayIndex}`);
+        console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${mostProductiveDayIndex}`);
         
         setWeeklyStats(stats);
         setLastFetchTime(now);
-        
-        // Set week start and end dates
-        if (stats.days.length > 0) {
-          const startDate = new Date(stats.days[0].date);
-          const endDate = new Date(stats.days[stats.days.length - 1].date);
-          setWeekDates({ start: startDate, end: endDate });
-          console.log(`Week date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
-        }
-        
+        setWeekDates({ start, end });
         setError(null);
       } else {
         console.log('Week offset changed during fetch, discarding results');
@@ -162,55 +180,69 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     }
   }, [weekOffset, weeklyStats, lastFetchTime]);
 
+  // Get current day index (0 = Monday, 6 = Sunday)
+  const getCurrentDayIndex = useCallback((): number => {
+    // Convert to Monday=0, Sunday=6 format
+    return (new Date().getDay() + 6) % 7;
+  }, []);
+
+  // Calculate current streak
+  const calculateStreak = useCallback((days: DailyStats[], currentDayIndex: number): number => {
+    let streak = 0;
+    
+    // Start from current day and look backwards
+    for (let i = currentDayIndex; i >= 0; i--) {
+      if (days[i] && days[i].productivityScore > 0) {
+        streak++;
+      } else {
+        break; // Streak is broken
+      }
+    }
+    
+    return streak;
+  }, []);
+
   // Function to manually refresh stats
   const refreshStats = useCallback(() => {
     console.log('Manual refresh of weekly stats requested');
-    
-    // Force refresh of localStorage data first
-    try {
-      const userId = localStorage.getItem('current_user_id');
-      if (userId) {
-        // Clear any localStorage cache for the current week to force fresh data
-        const today = new Date().toISOString().split('T')[0];
-        const cacheKey = `stats_cache_${weekOffset}_${today}`;
-        localStorage.removeItem(cacheKey);
-        
-        // Get today's date in ISO format (YYYY-MM-DD)
-        const todayKey = `words_${today}`;
-        
-        // Re-read today's word count from localStorage
-        const todayWords = localStorage.getItem(todayKey);
-        console.log(`Today's words before refresh: ${todayWords || '0'}`);
-        
-        // Clear isFetching flag to ensure we fetch new data
-        isFetchingRef.current = false;
-      }
-    } catch (e) {
-      console.error('Error clearing stats cache:', e);
-    }
     
     // Force refresh with a slight delay to allow any pending state updates
     setTimeout(() => {
       fetchWeeklyStats(true); // Force refresh 
     }, 300);
-  }, [fetchWeeklyStats, weekOffset]);
+  }, [fetchWeeklyStats]);
 
   // Fetch stats on mount and when weekOffset changes
   useEffect(() => {
     let isMounted = true;
     
     const fetchData = async () => {
-      if (!isMounted) return;
-      console.log('Initial fetch of weekly stats');
-      await fetchWeeklyStats();
+      if (isMounted) {
+        await fetchWeeklyStats();
+      }
     };
-
+    
     fetchData();
-
+    
     return () => {
       isMounted = false;
     };
-  }, [weekOffset, fetchWeeklyStats]);
+  }, [fetchWeeklyStats, weekOffset]);
+
+  // Set up stats refresh when localStorage changes (for real-time updates)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'stats_last_updated') {
+        console.log('Stats updated in localStorage, refreshing weekly stats');
+        refreshStats();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [refreshStats]);
 
   return {
     weeklyStats,
