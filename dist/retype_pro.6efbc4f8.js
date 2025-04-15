@@ -160,11 +160,11 @@
       });
     }
   }
-})({"bdYXx":[function(require,module,exports,__globalThis) {
+})({"hACtd":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 65138;
+var HMR_SERVER_PORT = 57435;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -45842,9 +45842,6 @@ parcelHelpers.export(exports, "getCurrentUserId", ()=>getCurrentUserId);
 // ========================
 // Content fetching functions
 parcelHelpers.export(exports, "fetchContentSet", ()=>fetchContentSet);
-// ========================
-// PROGRESS TRACKING
-// ========================
 // Update content progress (paragraph or wisdom section)
 parcelHelpers.export(exports, "updateContentProgress", ()=>updateContentProgress);
 // ========================
@@ -45934,15 +45931,55 @@ function isAuthenticated() {
 function getCurrentUserId() {
     // Try to get existing user ID
     const userId = localStorage.getItem('user_id');
-    // If no user ID exists, create a demo user
-    if (!userId) {
-        const demoUserId = 'DEMO-' + Math.random().toString(36).substring(2, 15);
+    // If no user ID exists, create a demo user with a proper ID in the DB
+    if (!userId) try {
+        const demoUserId = crypto.randomUUID();
+        const demoCode = 'DEMO' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        console.log('Creating demo user with ID:', demoUserId, 'and code:', demoCode);
+        // Create a demo access code (will be async but we won't wait)
+        createDemoAccessCode(demoUserId, demoCode).catch((e)=>console.error('Failed to create demo access code:', e));
+        // Store user ID in localStorage
         localStorage.setItem('user_id', demoUserId);
         localStorage.setItem('access_type', 'demo');
-        console.log('Created demo user ID:', demoUserId);
         return demoUserId;
+    } catch (e) {
+        console.error('Error creating demo user:', e);
+        // Create a local ID without DB entry as last resort
+        const fallbackId = 'LOCAL-' + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('user_id', fallbackId);
+        localStorage.setItem('access_type', 'local');
+        return fallbackId;
     }
     return userId;
+}
+// Create a demo access code in the database
+async function createDemoAccessCode(userId, demoCode) {
+    try {
+        // Check if the access_codes table exists
+        const { error: tableCheckError } = await supabase.from('access_codes').select('code').limit(1);
+        if (tableCheckError) {
+            console.error('access_codes table might not exist:', tableCheckError.message);
+            return;
+        }
+        // First check if this user already has an access code
+        const { data: existingCodes } = await supabase.from('access_codes').select('code').eq('user_id', userId);
+        if (existingCodes && existingCodes.length > 0) {
+            console.log('User already has access code(s):', existingCodes);
+            return;
+        }
+        // Create a new access code entry
+        const { error } = await supabase.from('access_codes').insert({
+            code: demoCode,
+            code_type: 'demo',
+            user_id: userId,
+            is_used: true,
+            used_at: new Date().toISOString()
+        });
+        if (error) console.error('Error creating demo access code:', error.message);
+        else console.log('Successfully created demo access code:', demoCode);
+    } catch (e) {
+        console.error('Exception in createDemoAccessCode:', e);
+    }
 }
 async function fetchContentSet() {
     console.log('Fetching content set from Supabase', supabaseUrl);
@@ -46048,54 +46085,109 @@ async function fetchContentSet() {
         return null;
     }
 }
+// ========================
+// PROGRESS TRACKING
+// ========================
+// Check if there's a user_progress table
+let hasCheckedTables = false;
+let hasUserProgressTable = false;
+// Verify database tables and create them if needed
+async function ensureTablesExist() {
+    if (hasCheckedTables) return hasUserProgressTable;
+    try {
+        console.log('Checking if user_progress table exists...');
+        // Try to read user_progress table structure
+        const { data, error } = await supabase.from('user_progress').select('id').limit(1);
+        if (error) {
+            console.error('Error checking user_progress table:', error.message);
+            hasUserProgressTable = false;
+        } else {
+            console.log('user_progress table exists');
+            hasUserProgressTable = true;
+        }
+        hasCheckedTables = true;
+        return hasUserProgressTable;
+    } catch (e) {
+        console.error('Exception checking tables:', e);
+        hasCheckedTables = true;
+        hasUserProgressTable = false;
+        return false;
+    }
+}
 async function updateContentProgress(contentId, contentType, completed) {
     const userId = getCurrentUserId();
     if (!userId) {
         console.error('User not authenticated');
         return false;
     }
+    // Always save locally first for reliability
+    saveProgressLocally(userId, contentId, contentType, completed);
     try {
-        // Check if progress record exists
-        const { data: existingProgress, error: lookupError } = await supabase.from('user_progress').select('*').eq('user_id', userId).eq('content_id', contentId).eq('content_type', contentType).single();
-        if (lookupError && lookupError.code !== 'PGRST116') {
-            console.error('Error checking for existing progress:', lookupError);
-            // Save progress locally as fallback
-            saveProgressLocally(userId, contentId, contentType, completed);
-            return true; // Return success to keep the app working
+        console.log(`Updating progress for user ${userId}, content ${contentId}, type ${contentType}, completed ${completed}`);
+        // Check if the table exists
+        const tableExists = await ensureTablesExist();
+        if (!tableExists) {
+            console.warn('user_progress table does not exist, using local storage only');
+            return true; // Return success, we've already saved locally
         }
-        if (existingProgress) {
-            // Update existing record
-            const { error } = await supabase.from('user_progress').update({
-                completed,
-                completed_at: completed ? new Date().toISOString() : null
-            }).eq('id', existingProgress.id);
-            if (error) {
-                console.error('Error updating progress in database:', error);
-                // Save progress locally as fallback
-                saveProgressLocally(userId, contentId, contentType, completed);
+        // Check if progress record exists - use a simpler query that's less likely to fail
+        try {
+            const { data: existingProgress, error: lookupError } = await supabase.from('user_progress').select('id, user_id, content_id, content_type, completed').eq('user_id', userId).eq('content_id', contentId).eq('content_type', contentType);
+            if (lookupError) {
+                console.error('Error checking for existing progress:', lookupError.message, lookupError.details);
+                return true; // Already saved locally
             }
-            return true; // Return success to keep the app working
-        } else {
-            // Create new record
-            const { error } = await supabase.from('user_progress').insert({
-                user_id: userId,
-                content_id: contentId,
-                content_type: contentType,
-                completed,
-                completed_at: completed ? new Date().toISOString() : null
-            });
-            if (error) {
-                console.error('Error creating progress in database:', error);
-                // Save progress locally as fallback
-                saveProgressLocally(userId, contentId, contentType, completed);
+            console.log('Existing progress check result:', existingProgress ? existingProgress.length : 0, 'records found');
+            // If we have existing progress records
+            if (existingProgress && existingProgress.length > 0) {
+                // Update the first record we found
+                const progressRecord = existingProgress[0];
+                console.log('Updating existing progress record with ID:', progressRecord.id);
+                try {
+                    const { error } = await supabase.from('user_progress').update({
+                        completed,
+                        completed_at: completed ? new Date().toISOString() : null
+                    }).eq('id', progressRecord.id);
+                    if (error) {
+                        console.error('Error updating progress in database:', error.message, error.details);
+                        console.error('Failed to update record with ID:', progressRecord.id);
+                    } else console.log('Successfully updated progress in database');
+                } catch (updateError) {
+                    console.error('Exception during progress update:', updateError);
+                }
+            } else {
+                // Create new record - but only if we know the table exists
+                console.log('Creating new progress record');
+                try {
+                    const { data: insertData, error } = await supabase.from('user_progress').insert({
+                        user_id: userId,
+                        content_id: contentId,
+                        content_type: contentType,
+                        completed,
+                        completed_at: completed ? new Date().toISOString() : null
+                    }).select();
+                    if (error) {
+                        console.error('Error creating progress in database:', error.message, error.details);
+                        console.error('Failed to insert with data:', {
+                            user_id: userId,
+                            content_id: contentId,
+                            content_type: contentType,
+                            completed
+                        });
+                    } else console.log('Successfully created new progress record:', insertData);
+                } catch (insertError) {
+                    console.error('Exception during progress creation:', insertError);
+                }
             }
-            return true; // Return success to keep the app working
+        } catch (lookupError) {
+            console.error('Exception during progress lookup:', lookupError);
         }
+        // Always return success since we've saved locally
+        return true;
     } catch (error) {
-        console.error('Exception in updateContentProgress:', error);
-        // Save progress locally as fallback
-        saveProgressLocally(userId, contentId, contentType, completed);
-        return true; // Return success to keep the app working
+        console.error('Exception in updateContentProgress:', error instanceof Error ? error.message : String(error));
+        console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
+        return true; // Return success to keep the app working, we've already saved locally
     }
 }
 // Save progress locally when Supabase fails
@@ -46123,10 +46215,39 @@ function saveProgressLocally(userId, contentId, contentType, completed) {
     }
 }
 async function logWordCount(wordCount) {
-    // Update user stats with the word count
-    return updateUserStats({
-        words: wordCount
-    });
+    try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            console.log('No user ID found, cannot log word count');
+            return false;
+        }
+        // First save to localStorage as reliable backup
+        saveStatsLocally(userId, wordCount);
+        console.log(`Logging ${wordCount} words for user ${userId}`);
+        // Insert into word_logs table (per SUPABASE.md schema)
+        const { data, error } = await supabase.from('word_logs').insert({
+            user_id: userId,
+            word_count: wordCount
+        });
+        if (error) {
+            console.error('Error logging word count to word_logs table:', error.message, error.details);
+            console.log('Falling back to local storage for word count');
+            return true; // Return success since we saved locally
+        }
+        console.log('Successfully logged word count to word_logs table');
+        // Also attempt to update the existing user_stats and user_daily_stats tables for backward compatibility
+        try {
+            await updateUserStats({
+                words: wordCount
+            });
+        } catch (updateError) {
+            console.log('Error updating legacy stats tables:', updateError);
+        }
+        return true;
+    } catch (e) {
+        console.error('Exception in logWordCount:', e);
+        return true; // Return success to allow app to continue
+    }
 }
 async function getTodayWordCount() {
     try {
@@ -46135,20 +46256,34 @@ async function getTodayWordCount() {
             console.log('No user ID found, returning 0 word count');
             return 0;
         }
-        // Try to get from local storage first
+        // Try to get from local storage first for immediate feedback
         const localStats = getLocalStats(userId);
-        if (localStats !== null) return localStats.todayWords;
+        if (localStats !== null) {
+            console.log('Using locally cached today word count:', localStats.todayWords);
+            return localStats.todayWords;
+        }
         const today = new Date().toISOString().split('T')[0];
-        // Make a simpler request that won't trigger 406
+        console.log(`Fetching today's (${today}) word count for user ${userId}`);
         try {
-            const { data, error } = await supabase.from('user_daily_stats').select('total_words').eq('user_id', userId).eq('date', today).single();
+            // Query word_logs table as per SUPABASE.md schema
+            const { data, error } = await supabase.from('word_logs').select('word_count').eq('user_id', userId).gte('created_at', `${today}T00:00:00Z`);
             if (error) {
-                // If the error is 'No rows found', it's normal for new users
-                if (error.code === 'PGRST116') return 0; // No data for today yet
-                console.error('Error fetching today\'s word count:', error);
-                return 0;
+                console.error('Error fetching today\'s word count from word_logs:', error.message);
+                // Fall back to legacy table
+                console.log('Falling back to legacy user_daily_stats table');
+                const { data: legacyData, error: legacyError } = await supabase.from('user_daily_stats').select('total_words').eq('user_id', userId).eq('date', today).single();
+                if (legacyError) {
+                    console.log('Legacy table fallback also failed:', legacyError.message);
+                    return 0;
+                }
+                return legacyData?.total_words || 0;
             }
-            return data?.total_words || 0;
+            // Sum up all word counts for today
+            const todayWords = data?.reduce((sum, row)=>sum + row.word_count, 0) || 0;
+            console.log('Today\'s word count from word_logs:', todayWords);
+            // Update local cache
+            saveStatsLocally(userId, 0); // Just to update the cache without adding words
+            return todayWords;
         } catch (requestError) {
             console.log('Error fetching stats:', requestError);
             return 0;
@@ -46181,21 +46316,41 @@ async function getTotalWordCount() {
             console.error('User not authenticated');
             return 0;
         }
-        // Try to get from local storage first
+        // Try to get from local storage first for immediate feedback
         const localStats = getLocalStats(userId);
-        if (localStats !== null) return localStats.totalWords;
-        // First try to get from user_stats table for better performance
-        const { data: userStats, error: userStatsError } = await supabase.from('user_stats').select('words').eq('user_id', userId).single();
-        if (!userStatsError && userStats) return userStats.words;
-        // Fallback to summing daily stats if user_stats not available
-        const { data, error } = await supabase.from('user_daily_stats').select('total_words').eq('user_id', userId);
-        if (error) {
-            console.error('Error fetching total word count:', error);
+        if (localStats !== null) {
+            console.log('Using locally cached total word count:', localStats.totalWords);
+            return localStats.totalWords;
+        }
+        console.log('Fetching total word count for user:', userId);
+        try {
+            // Query word_logs table per SUPABASE.md schema
+            const { data, error } = await supabase.from('word_logs').select('word_count').eq('user_id', userId);
+            if (error) {
+                console.error('Error fetching total word count from word_logs:', error.message);
+                // Fallback to legacy user_stats table
+                console.log('Falling back to legacy user_stats table');
+                const { data: legacyData, error: legacyError } = await supabase.from('user_stats').select('words').eq('user_id', userId).single();
+                if (!legacyError && legacyData) return legacyData.words;
+                // Further fallback to summing legacy daily stats
+                console.log('Falling back to legacy daily stats summing');
+                const { data: legacyDailyData, error: legacyDailyError } = await supabase.from('user_daily_stats').select('total_words').eq('user_id', userId);
+                if (legacyDailyError) {
+                    console.error('All fallbacks failed for total word count');
+                    return 0;
+                }
+                return legacyDailyData?.reduce((sum, row)=>sum + row.total_words, 0) || 0;
+            }
+            // Sum up all word counts
+            const totalWords = data?.reduce((sum, row)=>sum + row.word_count, 0) || 0;
+            console.log('Total word count from word_logs:', totalWords);
+            return totalWords;
+        } catch (e) {
+            console.error('Error in getting total word count:', e);
             return 0;
         }
-        return data?.reduce((sum, row)=>sum + row.total_words, 0) || 0;
     } catch (e) {
-        console.error('Error in getTotalWordCount:', e);
+        console.error('Exception in getTotalWordCount:', e);
         return 0;
     }
 }
@@ -72353,6 +72508,6 @@ exports.default = withLoadingAnimation;
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["bdYXx","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:65138")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["hACtd","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:57435")
 
 //# sourceMappingURL=retype_pro.6efbc4f8.js.map
