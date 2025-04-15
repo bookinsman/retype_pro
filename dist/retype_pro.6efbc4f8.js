@@ -160,11 +160,11 @@
       });
     }
   }
-})({"bdYXx":[function(require,module,exports,__globalThis) {
+})({"7KwkS":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 65138;
+var HMR_SERVER_PORT = 1234;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -56857,7 +56857,7 @@ function ArticlePage() {
         columnNumber: 5
     }, this);
 }
-_s(ArticlePage, "7P9tYyCHn/CR9UACMmm6GV3dfhs=");
+_s(ArticlePage, "XjkZ8cGvZcQ4mE3jRfkzJZRHixI=");
 _c = ArticlePage;
 // Add these styles to your CSS file
 const styles = `
@@ -57779,7 +57779,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
         columnNumber: 5
     }, this);
 }
-_s(WeeklyPerformanceChart, "lGeGr4aRhTACSrVC6OS7LsWABLc=", false, function() {
+_s(WeeklyPerformanceChart, "AOoAbojVbybFZoUVmn4PlrngO6w=", false, function() {
     return [
         (0, _useWeeklyStats.useWeeklyStats)
     ];
@@ -71895,7 +71895,7 @@ $RefreshReg$(_c, "TotalStats");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/statsService":"hTmM7","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"6cybX":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/statsService":"hTmM7"}],"6cybX":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$5ca7 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$5ca7.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -72011,7 +72011,7 @@ $RefreshReg$(_c, "DailyStats");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/statsService":"hTmM7","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2I4vR":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/statsService":"hTmM7"}],"2I4vR":[function(require,module,exports,__globalThis) {
 // This service manages content fetching and tracking for paragraphs and wisdom sections
 // Types for content structure
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -72353,6 +72353,6 @@ exports.default = withLoadingAnimation;
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["bdYXx","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:65138")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["7KwkS","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:1234")
 
 //# sourceMappingURL=retype_pro.6efbc4f8.js.map
