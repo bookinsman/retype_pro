@@ -83,6 +83,7 @@ export default function ArticlePage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isStatsExpanded, setIsStatsExpanded] = useState(false);
+  const [isTogglingStats, setIsTogglingStats] = useState(false);
   
   // State for content set with paragraphs and wisdom sections
   const [contentSet, setContentSet] = useState<ContentSet | null>(null);
@@ -158,11 +159,31 @@ export default function ArticlePage() {
         const content = await getCurrentContent();
         setContentSet(content);
         
-        // Fetch user stats
-        const userStats = await getTodayStats();
+        // Get stats from localStorage first for immediate feedback
+        const localTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+        const today = new Date().toISOString().split('T')[0];
+        const todayKey = `words_${today}`;
+        const localTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
+        
+        console.log(`Retrieved stats from localStorage: total words: ${localTotalWords}, today: ${localTodayWords}`);
+        
+        // Set initial stats from localStorage
         setStats({
-          words: userStats.words
+          words: localTotalWords
         });
+        
+        // Then fetch from server to update if available
+        try {
+          const userStats = await getTodayStats();
+          if (userStats.words > 0) {
+            setStats({
+              words: userStats.words
+            });
+            console.log(`Updated stats from server: ${userStats.words} words`);
+          }
+        } catch (statsError) {
+          console.error('Failed to fetch stats from server, using localStorage only:', statsError);
+        }
 
         // If active index is set but paragraph is already completed, reset it
         const savedIndex = localStorage.getItem('activeParaIndex');
@@ -242,36 +263,62 @@ export default function ArticlePage() {
     }
   }, []);
 
-  // Modified success handler to track completed paragraph and move to next paragraph
+  // Handler for paragraph completion
   const handleParagraphComplete = useCallback(async (index: number) => {
-    if (!contentSet || !contentSet.paragraphs || 
-        index < 0 || index >= contentSet.paragraphs.length) {
-      console.error('Cannot complete paragraph: Content not loaded or paragraph index invalid');
-      return;
-    }
-    
-    // Clear saved typing progress
     localStorage.removeItem('typedContent');
     localStorage.removeItem('progress');
     
     setShowSuccess(index);
     
     try {
+      if (!contentSet || !contentSet.paragraphs) {
+        console.error('Cannot complete paragraph: Content not loaded');
+        return;
+      }
+      
+      console.log(`Completing paragraph ${index + 1} of ${contentSet.paragraphs.length}`);
+      
       // Mark paragraph as completed in content service
       const paragraphId = contentSet.paragraphs[index].id;
       const updatedContentSet = await completeParagraph(paragraphId);
       setContentSet(updatedContentSet);
       
+      // Calculate word count for better tracking
+      const paragraphContent = contentSet.paragraphs[index].content;
+      const wordCount = paragraphContent.trim().split(/\s+/).length;
+      console.log(`Paragraph completed with ${wordCount} words`);
+      
       setIsTyping(false);
       
       // Track completed paragraph in stats - now only tracking words
       const userStats = await trackCompletedParagraph(contentSet.paragraphs[index].content);
+      console.log('Updated user stats:', userStats);
+      
+      // Update stats in the UI immediately
       setStats({
         words: userStats.words
       });
       
-      // Trigger a refresh of stats components
-      setStatsRefreshKey(prev => prev + 1);
+      // Force clear any cached data to ensure fresh stats
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const todayKey = `words_${today}`;
+        const todayWords = localStorage.getItem(todayKey);
+        console.log(`Today's words after paragraph completion: ${todayWords || '0'}`);
+      } catch (e) {
+        console.error('Error checking localStorage stats:', e);
+      }
+      
+      // Trigger a refresh of stats components after a short delay
+      // This delay ensures all database operations have completed
+      setTimeout(() => {
+        console.log('Refreshing stats with new refreshKey');
+        setStatsRefreshKey(prevKey => {
+          const newKey = prevKey + 1;
+          console.log(`Stats refresh key updated: ${prevKey} -> ${newKey}`);
+          return newKey;
+        });
+      }, 800); // Increase delay to ensure updates are complete
       
       // Set a timeout to move to the next paragraph after showing success message
       setTimeout(() => {
@@ -293,13 +340,17 @@ export default function ArticlePage() {
             
             // Scroll to the next paragraph
             scrollToParagraph(nextIndex);
+            
+            console.log(`Moving to next paragraph (index: ${nextIndex})`);
+          } else {
+            console.log('No more uncompleted paragraphs to move to');
           }
         }
       }, 1500);
     } catch (error) {
       console.error('Error completing paragraph:', error);
     }
-  }, [contentSet, scrollToParagraph]);
+  }, [contentSet, scrollToParagraph, statsRefreshKey]);
   
   // Modified handleKeyPress to use the new completion handler
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
@@ -389,7 +440,16 @@ export default function ArticlePage() {
 
   // Toggle stats expansion
   const toggleStatsExpansion = () => {
+    // Add debounce to prevent multiple rapid toggles
+    if (isTogglingStats) return;
+    
+    setIsTogglingStats(true);
     setIsStatsExpanded(!isStatsExpanded);
+    
+    // Reset toggle lock after a short delay
+    setTimeout(() => {
+      setIsTogglingStats(false);
+    }, 500);
   };
 
   // Handler for marking wisdom sections as read
@@ -519,20 +579,23 @@ export default function ArticlePage() {
       </div>
 
       {/* Stats Dashboard */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isStatsExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-            animate={{ opacity: 1, height: 'auto', marginBottom: 20 }}
+            animate={{ opacity: 1, height: 500, marginBottom: 20 }}
             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-6xl bg-white rounded-xl shadow-md overflow-hidden"
+            transition={{ 
+              duration: 0.4,
+              ease: "easeInOut"
+            }}
+            className="w-full max-w-6xl bg-white rounded-xl shadow-md overflow-y-auto"
           >
             <div className="p-6 relative">
               {/* Close button */}
               <button 
                 onClick={toggleStatsExpansion}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors z-10"
                 aria-label="Close"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

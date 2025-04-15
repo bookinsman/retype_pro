@@ -1214,6 +1214,10 @@ img, video {
   overflow: hidden;
 }
 
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
 .whitespace-normal {
   white-space: normal;
 }

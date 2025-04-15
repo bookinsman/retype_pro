@@ -160,11 +160,11 @@
       });
     }
   }
-})({"hACtd":[function(require,module,exports,__globalThis) {
+})({"g0ov7":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 57435;
+var HMR_SERVER_PORT = 5000;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -32474,23 +32474,35 @@ function WisdomMinimalLanding() {
         setAccessCode(e.target.value);
     }, []);
     const handleAccess = (0, _react.useCallback)(async ()=>{
-        if (!accessCode.trim()) {
+        const trimmedCode = accessCode.trim();
+        if (!trimmedCode) {
             setError("\u012Eveskite prieigos kod\u0105.");
             setTimeout(()=>setError(""), 3000);
             return;
         }
+        // Basic validation - ensure it's a reasonable looking access code
+        if (trimmedCode.length < 3 || trimmedCode.length > 20) {
+            setError("Neteisingas kodo formatas. Kodas tur\u0117t\u0173 b\u016Bti 3-20 simboli\u0173 ilgio.");
+            setTimeout(()=>setError(""), 3000);
+            return;
+        }
         try {
-            const result = await (0, _supabaseClient.validateAccessCode)(accessCode);
-            if (result.success) // Redirect to article page on success
-            navigate('/article');
-            else {
+            console.log("Validating access code via Supabase:", trimmedCode);
+            // Use Supabase validation function
+            const result = await (0, _supabaseClient.validateAccessCode)(trimmedCode);
+            if (result.success) {
+                console.log("Access code validation successful");
+                // Redirect to article page on success
+                navigate('/article');
+            } else {
                 // Show error message
-                setError(result.error || "Neteisingas kodas. Bandykite dar kart\u0105.");
+                console.log("Access code validation failed:", result.message);
+                setError(result.message || "Neteisingas kodas. Bandykite dar kart\u0105.");
                 setTimeout(()=>setError(""), 3000);
             }
         } catch (error) {
             console.error('Error validating access code:', error);
-            setError("Serverio klaida. Bandykite v\u0117liau.");
+            setError("Klaida tikrinant kod\u0105. Bandykite dar kart\u0105.");
             setTimeout(()=>setError(""), 3000);
         }
     }, [
@@ -32549,12 +32561,30 @@ function WisdomMinimalLanding() {
     }, [
         rewrittenCount
     ]);
+    const handleStartJourney = (0, _react.useCallback)(()=>{
+        if (!accessCode.trim()) {
+            // Scroll to access section if no code entered
+            const accessSection = document.getElementById('access-section');
+            if (accessSection) {
+                accessSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+                setError("\u012Eveskite prieigos kod\u0105.");
+                setTimeout(()=>setError(""), 3000);
+            }
+            return;
+        }
+        // Use the handleAccess function
+        handleAccess();
+    }, [
+        accessCode
+    ]);
     if (!isLoaded) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _loadingAnimationDefault.default), {
         fullScreen: true,
         message: "Kraunama..."
     }, void 0, false, {
         fileName: "src/pages/WisdomMinimalLanding.tsx",
-        lineNumber: 216,
+        lineNumber: 245,
         columnNumber: 12
     }, this);
     // Main content background and layout classes
@@ -32599,7 +32629,7 @@ function WisdomMinimalLanding() {
                                 children: "Readleta"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 233,
+                                lineNumber: 262,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _slideInTextDefault.default), {
@@ -32609,13 +32639,13 @@ function WisdomMinimalLanding() {
                                 duration: 1.2
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 241,
+                                lineNumber: 270,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 232,
+                        lineNumber: 261,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("nav", {
@@ -32641,24 +32671,24 @@ function WisdomMinimalLanding() {
                                         className: "absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 ease-in-out group-hover:w-full"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 259,
+                                        lineNumber: 288,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, item.name, true, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 250,
+                                lineNumber: 279,
                                 columnNumber: 13
                             }, this))
                     }, void 0, false, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 248,
+                        lineNumber: 277,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 231,
+                lineNumber: 260,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -32680,7 +32710,7 @@ function WisdomMinimalLanding() {
                         children: "Prieiga prie i\u0161minties"
                     }, void 0, false, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 271,
+                        lineNumber: 300,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -32688,7 +32718,7 @@ function WisdomMinimalLanding() {
                         children: "Esteti\u0161kai \u0161vari erdv\u0117 tiems, kurie ie\u0161ko gilios savistabos, senosios i\u0161minties ir nepertraukiamo proto gilinimo."
                     }, void 0, false, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 274,
+                        lineNumber: 303,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -32710,7 +32740,7 @@ function WisdomMinimalLanding() {
                                 children: "VISO PERRA\u0160YTA \u017DOD\u017DI\u0172"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 283,
+                                lineNumber: 312,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).p, {
@@ -32730,19 +32760,19 @@ function WisdomMinimalLanding() {
                                 children: formattedCount
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 284,
+                                lineNumber: 313,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 277,
+                        lineNumber: 306,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 265,
+                lineNumber: 294,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -32770,12 +32800,12 @@ function WisdomMinimalLanding() {
                                 className: "w-full border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-gray-700 font-lora text-center"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 303,
+                                lineNumber: 332,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 302,
+                            lineNumber: 331,
                             columnNumber: 11
                         }, this),
                         error && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).p, {
@@ -32789,7 +32819,7 @@ function WisdomMinimalLanding() {
                             children: error
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 319,
+                            lineNumber: 348,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
@@ -32800,18 +32830,18 @@ function WisdomMinimalLanding() {
                             children: "Prieiga"
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 327,
+                            lineNumber: 356,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 301,
+                    lineNumber: 330,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 296,
+                lineNumber: 325,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Section, {
@@ -32829,14 +32859,14 @@ function WisdomMinimalLanding() {
                                     children: "\uD83D\uDCDC"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 345,
+                                    lineNumber: 374,
                                     columnNumber: 13
                                 }, this),
                                 "Perra\u0161ymo filosofija"
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 344,
+                            lineNumber: 373,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -32854,18 +32884,18 @@ function WisdomMinimalLanding() {
                             children: staticText
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 348,
+                            lineNumber: 377,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 343,
+                    lineNumber: 372,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 338,
+                lineNumber: 367,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Section, {
@@ -32924,27 +32954,27 @@ function WisdomMinimalLanding() {
                                         children: "Fokuso re\u017Eimas"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 410,
+                                        lineNumber: 439,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
                                         children: "K\u016Brybinis re\u017Eimas"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 411,
+                                        lineNumber: 440,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
                                         children: "Atminties re\u017Eimas"
                                     }, void 0, false, {
                                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                        lineNumber: 412,
+                                        lineNumber: 441,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 409,
+                                lineNumber: 438,
                                 columnNumber: 17
                             }, this)
                         }
@@ -32956,22 +32986,22 @@ function WisdomMinimalLanding() {
                                 children: feature.content
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 419,
+                                lineNumber: 448,
                                 columnNumber: 17
                             }, this) : feature.content
                         }, index, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 417,
+                            lineNumber: 446,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 365,
+                    lineNumber: 394,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 359,
+                lineNumber: 388,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Section, {
@@ -33000,7 +33030,7 @@ function WisdomMinimalLanding() {
                             children: "\uD83D\uDE80 Prad\u0117kite savo transformacijos kelion\u0119"
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 447,
+                            lineNumber: 476,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("ul", {
@@ -33012,14 +33042,14 @@ function WisdomMinimalLanding() {
                                             children: "1."
                                         }, void 0, false, {
                                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                            lineNumber: 449,
+                                            lineNumber: 478,
                                             columnNumber: 17
                                         }, this),
                                         " Intuityvi s\u0105saja \u2013 pritaikyta tiek kompiuteriams, tiek mobiliesiems \u012Frenginiams"
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 449,
+                                    lineNumber: 478,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
@@ -33028,14 +33058,14 @@ function WisdomMinimalLanding() {
                                             children: "2."
                                         }, void 0, false, {
                                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                            lineNumber: 450,
+                                            lineNumber: 479,
                                             columnNumber: 17
                                         }, this),
                                         " Progresas \u2013 individualiai pritaikytas j\u016Bs\u0173 mokymosi tempui"
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 450,
+                                    lineNumber: 479,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
@@ -33044,20 +33074,20 @@ function WisdomMinimalLanding() {
                                             children: "3."
                                         }, void 0, false, {
                                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                            lineNumber: 451,
+                                            lineNumber: 480,
                                             columnNumber: 17
                                         }, this),
                                         " Integruoti garsai \u2013 skirti skatinti gil\u0173 mokymosi re\u017Eim\u0105"
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 451,
+                                    lineNumber: 480,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 448,
+                            lineNumber: 477,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -33072,27 +33102,27 @@ function WisdomMinimalLanding() {
                                 variant: "primary",
                                 size: "lg",
                                 className: "bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-cormorant text-lg py-3 px-8",
-                                onClick: ()=>scrollToSection("top"),
+                                onClick: handleStartJourney,
                                 children: "Atrasti prieig\u0105 dabar"
                             }, void 0, false, {
                                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                lineNumber: 458,
+                                lineNumber: 487,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 453,
+                            lineNumber: 482,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 434,
+                    lineNumber: 463,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 428,
+                lineNumber: 457,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("footer", {
@@ -33105,7 +33135,7 @@ function WisdomMinimalLanding() {
                             children: "\xa9 2070 I\u0161minties Kontinuumas"
                         }, void 0, false, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 473,
+                            lineNumber: 502,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -33116,14 +33146,14 @@ function WisdomMinimalLanding() {
                                     children: "Tik tiems, kurie \u017Eino"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 475,
+                                    lineNumber: 504,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                                     className: "w-[1px] h-3 bg-gray-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 476,
+                                    lineNumber: 505,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("a", {
@@ -33132,24 +33162,24 @@ function WisdomMinimalLanding() {
                                     children: "Privatumo politika"
                                 }, void 0, false, {
                                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                                    lineNumber: 477,
+                                    lineNumber: 506,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/WisdomMinimalLanding.tsx",
-                            lineNumber: 474,
+                            lineNumber: 503,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 472,
+                    lineNumber: 501,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 471,
+                lineNumber: 500,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).button, {
@@ -33186,27 +33216,27 @@ function WisdomMinimalLanding() {
                         d: "M18 15l-6-6-6 6"
                     }, void 0, false, {
                         fileName: "src/pages/WisdomMinimalLanding.tsx",
-                        lineNumber: 506,
+                        lineNumber: 535,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "src/pages/WisdomMinimalLanding.tsx",
-                    lineNumber: 495,
+                    lineNumber: 524,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/WisdomMinimalLanding.tsx",
-                lineNumber: 483,
+                lineNumber: 512,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/pages/WisdomMinimalLanding.tsx",
-        lineNumber: 230,
+        lineNumber: 259,
         columnNumber: 5
     }, this);
 }
-_s1(WisdomMinimalLanding, "SmcgwUVVglOjMcEY+CSLg9ROPF0=", false, function() {
+_s1(WisdomMinimalLanding, "bNQ/vVvVZ9bDqUpaoeDJB2tzpNA=", false, function() {
     return [
         (0, _reactRouterDom.useNavigate)
     ];
@@ -33222,7 +33252,7 @@ $RefreshReg$(_c2, "WisdomMinimalLanding");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","../services/supabaseClient":"jgwHA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"d3GZa":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/supabaseClient":"jgwHA"}],"d3GZa":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$b71d = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$b71d.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -45829,14 +45859,23 @@ $RefreshReg$(_c, "LoadingAnimation");
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "supabase", ()=>supabase);
-// ========================
-// ACCESS CODE FUNCTIONS
-// ========================
-parcelHelpers.export(exports, "validateAccessCode", ()=>validateAccessCode);
-// Check if user is authenticated
-parcelHelpers.export(exports, "isAuthenticated", ()=>isAuthenticated);
-// Get the current user ID
-parcelHelpers.export(exports, "getCurrentUserId", ()=>getCurrentUserId);
+/**
+ * Gets the current user ID from localStorage, or creates a new one if not found
+ * @returns The current user ID
+ */ parcelHelpers.export(exports, "getUserId", ()=>getUserId);
+/**
+ * Alias for getUserId to maintain compatibility with imports in other files
+ * @returns The current user ID
+ */ parcelHelpers.export(exports, "getCurrentUserId", ()=>getCurrentUserId);
+/**
+ * Checks if there is currently an authenticated user
+ * @returns True if a user ID exists, false otherwise
+ */ parcelHelpers.export(exports, "isAuthenticated", ()=>isAuthenticated);
+/**
+ * Validates an access code and assigns it to the current user if valid
+ * @param code The access code to validate
+ * @returns Object with success flag and message
+ */ parcelHelpers.export(exports, "validateAccessCode", ()=>validateAccessCode);
 // ========================
 // CONTENT FUNCTIONS
 // ========================
@@ -45886,99 +45925,119 @@ const supabase = (0, _supabaseJs.createClient)(supabaseUrl, supabaseAnonKey, {
         fetch: customFetch
     }
 });
-async function validateAccessCode(enteredCode) {
-    try {
-        // Check if the code exists and is not used
-        const { data: codeEntry, error } = await supabase.from('access_codes').select('*').eq('code', enteredCode).eq('is_used', false).single();
-        if (error || !codeEntry) return {
-            success: false,
-            error: 'Neteisingas arba jau panaudotas kodas.'
-        };
-        // Generate a new user ID
-        const userId = crypto.randomUUID();
-        // Mark the code as used
-        const { error: updateError } = await supabase.from('access_codes').update({
-            is_used: true,
-            user_id: userId,
-            used_at: new Date().toISOString()
-        }).eq('code', enteredCode);
-        if (updateError) {
-            console.error('Error updating access code:', updateError);
-            return {
-                success: false,
-                error: "Klaida aktyvuojant kod\u0105. Bandykite v\u0117liau."
-            };
+function getUserId() {
+    // Check for a locally stored user ID
+    const storedId = localStorage.getItem('user_id') || localStorage.getItem('userId');
+    if (storedId) {
+        // Check if we need to migrate from old "LOCAL-" format to proper UUID
+        if (storedId.startsWith('LOCAL-') || storedId.startsWith('DEMO') || storedId.length < 20) {
+            console.log('Detected old format user ID, migrating to UUID format');
+            // Generate a new proper UUID
+            const newUserId = crypto.randomUUID();
+            // Store this new ID in both formats for backward compatibility
+            localStorage.setItem('user_id', newUserId);
+            localStorage.setItem('userId', newUserId);
+            return newUserId;
         }
-        // Store the user ID and code type in localStorage
-        localStorage.setItem('user_id', userId);
-        localStorage.setItem('access_type', codeEntry.code_type);
-        return {
-            success: true,
-            userId,
-            codeType: codeEntry.code_type
-        };
-    } catch (error) {
-        console.error('Access code validation error:', error);
-        return {
-            success: false,
-            error: "Serverio klaida. Bandykite v\u0117liau."
-        };
+        return storedId;
     }
-}
-function isAuthenticated() {
-    return !!getCurrentUserId();
-}
-function getCurrentUserId() {
-    // Try to get existing user ID
-    const userId = localStorage.getItem('user_id');
-    // If no user ID exists, create a demo user with a proper ID in the DB
-    if (!userId) try {
-        const demoUserId = crypto.randomUUID();
-        const demoCode = 'DEMO' + Math.random().toString(36).substring(2, 6).toUpperCase();
-        console.log('Creating demo user with ID:', demoUserId, 'and code:', demoCode);
-        // Create a demo access code (will be async but we won't wait)
-        createDemoAccessCode(demoUserId, demoCode).catch((e)=>console.error('Failed to create demo access code:', e));
-        // Store user ID in localStorage
-        localStorage.setItem('user_id', demoUserId);
-        localStorage.setItem('access_type', 'demo');
-        return demoUserId;
+    // No user ID exists, we need to create one
+    try {
+        const userId = crypto.randomUUID();
+        console.log('Creating new user with ID:', userId);
+        // Store user ID in both formats for backward compatibility
+        localStorage.setItem('user_id', userId);
+        localStorage.setItem('userId', userId);
+        // Initialize new user in the background
+        ensureUserInitialized(userId);
+        return userId;
     } catch (e) {
-        console.error('Error creating demo user:', e);
-        // Create a local ID without DB entry as last resort
-        const fallbackId = 'LOCAL-' + Math.random().toString(36).substring(2, 15);
+        console.error('Error creating user ID:', e);
+        // Fallback to a simple random ID in case of any issues
+        const fallbackId = 'USER-' + Math.random().toString(36).substring(2, 10);
         localStorage.setItem('user_id', fallbackId);
-        localStorage.setItem('access_type', 'local');
+        localStorage.setItem('userId', fallbackId);
         return fallbackId;
     }
-    return userId;
 }
-// Create a demo access code in the database
-async function createDemoAccessCode(userId, demoCode) {
+function getCurrentUserId() {
+    return getUserId();
+}
+function isAuthenticated() {
+    const userId = getUserId();
+    return !!userId && userId.length > 0;
+}
+async function validateAccessCode(code) {
+    // Basic validation
+    if (!code || typeof code !== 'string') {
+        console.log('Invalid access code format');
+        return {
+            success: false,
+            message: 'Neteisingas prieigos kodo formatas.'
+        };
+    }
+    if (code.length < 3 || code.length > 20) {
+        console.log('Access code must be between 3 and 20 characters');
+        return {
+            success: false,
+            message: "Prieigos kodas turi b\u016Bti nuo 3 iki 20 simboli\u0173."
+        };
+    }
     try {
-        // Check if the access_codes table exists
-        const { error: tableCheckError } = await supabase.from('access_codes').select('code').limit(1);
-        if (tableCheckError) {
-            console.error('access_codes table might not exist:', tableCheckError.message);
-            return;
+        // First check if the code already exists and if it's already used
+        const { data: accessCode, error: fetchError } = await supabase.from('access_codes').select('*').eq('code', code).single();
+        if (fetchError) {
+            console.log('Error checking access code:', fetchError.message);
+            return {
+                success: false,
+                message: 'Neteisingas prieigos kodas.'
+            };
         }
-        // First check if this user already has an access code
-        const { data: existingCodes } = await supabase.from('access_codes').select('code').eq('user_id', userId);
-        if (existingCodes && existingCodes.length > 0) {
-            console.log('User already has access code(s):', existingCodes);
-            return;
+        if (!accessCode) {
+            console.log('Access code not found in database');
+            return {
+                success: false,
+                message: 'Neteisingas prieigos kodas.'
+            };
         }
-        // Create a new access code entry
-        const { error } = await supabase.from('access_codes').insert({
-            code: demoCode,
-            code_type: 'demo',
-            user_id: userId,
+        if (accessCode.is_used) {
+            console.log('Access code already used');
+            return {
+                success: false,
+                message: "\u0160is prieigos kodas jau panaudotas."
+            };
+        }
+        // Generate a new user ID for this access code
+        const userId = crypto.randomUUID();
+        // Mark the access code as used
+        const { error: updateError } = await supabase.from('access_codes').update({
             is_used: true,
-            used_at: new Date().toISOString()
-        });
-        if (error) console.error('Error creating demo access code:', error.message);
-        else console.log('Successfully created demo access code:', demoCode);
+            used_at: new Date().toISOString(),
+            user_id: userId
+        }).eq('code', code);
+        if (updateError) {
+            console.log('Error updating access code:', updateError.message);
+            return {
+                success: false,
+                message: "Klaida aktyvuojant prieigos kod\u0105."
+            };
+        }
+        // Store user info in localStorage
+        localStorage.setItem('user_id', userId);
+        localStorage.setItem('userId', userId);
+        localStorage.setItem('code_type', accessCode.code_type);
+        // Initialize the user in the database
+        await ensureUserInitialized(userId);
+        console.log('Successfully validated access code');
+        return {
+            success: true
+        };
     } catch (e) {
-        console.error('Exception in createDemoAccessCode:', e);
+        console.error('Exception in validateAccessCode:', e);
+        return {
+            success: false,
+            message: "\u012Evyko klaida tikrinant prieigos kod\u0105."
+        };
     }
 }
 async function fetchContentSet() {
@@ -46038,7 +46097,7 @@ async function fetchContentSet() {
             return null;
         }
         console.log('Wisdom sections fetched successfully, count:', wisdomData.length);
-        const userId = getCurrentUserId();
+        const userId = getUserId();
         console.log('Current user ID for progress tracking:', userId);
         let paragraphProgress = {};
         let wisdomProgress = {};
@@ -46055,21 +46114,33 @@ async function fetchContentSet() {
                 });
             }
         }
-        // Format paragraphs with completion status
-        const paragraphs = paragraphsData.map((p)=>({
+        // Format paragraphs with completion status from both localStorage and remote data
+        const paragraphs = paragraphsData.map((p)=>{
+            // Check localStorage first for more reliable completion status
+            const localStorageKey = `paragraph_${p.id}_completed`;
+            const isCompletedLocally = localStorage.getItem(localStorageKey) === 'true';
+            return {
                 id: p.id,
                 content: p.content,
                 order: p.order_index,
-                completed: paragraphProgress[p.id] || false
-            }));
+                // Prioritize localStorage over remote data
+                completed: isCompletedLocally || paragraphProgress[p.id] || false
+            };
+        });
         // Format wisdom sections with completion status
-        const wisdomSections = wisdomData.map((w)=>({
+        const wisdomSections = wisdomData.map((w)=>{
+            // Check localStorage first for more reliable completion status
+            const localStorageKey = `wisdom_${w.id}_completed`;
+            const isCompletedLocally = localStorage.getItem(localStorageKey) === 'true';
+            return {
                 id: w.id,
                 type: w.type,
                 title: w.title,
                 content: w.content,
-                completed: wisdomProgress[w.id] || false
-            }));
+                // Prioritize localStorage over remote data
+                completed: isCompletedLocally || wisdomProgress[w.id] || false
+            };
+        });
         const result = {
             id: contentSet.id,
             title: contentSet.title,
@@ -46115,7 +46186,7 @@ async function ensureTablesExist() {
     }
 }
 async function updateContentProgress(contentId, contentType, completed) {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
         console.error('User not authenticated');
         return false;
@@ -46216,34 +46287,50 @@ function saveProgressLocally(userId, contentId, contentType, completed) {
 }
 async function logWordCount(wordCount) {
     try {
-        const userId = getCurrentUserId();
+        const userId = getUserId();
         if (!userId) {
             console.log('No user ID found, cannot log word count');
             return false;
         }
-        // First save to localStorage as reliable backup
-        saveStatsLocally(userId, wordCount);
-        console.log(`Logging ${wordCount} words for user ${userId}`);
-        // Insert into word_logs table (per SUPABASE.md schema)
-        const { data, error } = await supabase.from('word_logs').insert({
-            user_id: userId,
-            word_count: wordCount
-        });
-        if (error) {
-            console.error('Error logging word count to word_logs table:', error.message, error.details);
-            console.log('Falling back to local storage for word count');
-            return true; // Return success since we saved locally
-        }
-        console.log('Successfully logged word count to word_logs table');
-        // Also attempt to update the existing user_stats and user_daily_stats tables for backward compatibility
+        // First save to localStorage as reliable backup - don't wait for Supabase
         try {
-            await updateUserStats({
+            saveStatsLocally(userId, wordCount);
+            console.log(`Logged ${wordCount} words locally for user ${userId}`);
+        } catch (localError) {
+            console.error('Error saving to localStorage:', localError);
+        }
+        // Skip Supabase for local or demo users
+        if (userId.startsWith('LOCAL-') || userId.startsWith('DEMO')) {
+            console.log(`Using local-only mode for user ${userId}, skipping Supabase updates`);
+            return true;
+        }
+        // Try to log to Supabase, but don't block if it fails
+        try {
+            // Simple word log entry
+            const wordLogEntry = {
+                user_id: userId,
+                word_count: wordCount
+            };
+            // Insert into word_logs table
+            const { error } = await supabase.from('word_logs').insert(wordLogEntry);
+            if (error) console.error('Error logging to word_logs table:', error.message);
+            else console.log('Successfully logged to word_logs table');
+        } catch (loggingError) {
+            console.error('Exception logging to word_logs:', loggingError);
+        }
+        // Update the legacy stats tables in the background
+        try {
+            updateUserStats({
                 words: wordCount
+            }).then((success)=>{
+                if (success) console.log('Legacy stats updated successfully');
+            }).catch((e)=>{
+                console.error('Error updating legacy stats:', e);
             });
         } catch (updateError) {
-            console.log('Error updating legacy stats tables:', updateError);
+            console.error('Error starting legacy stats update:', updateError);
         }
-        return true;
+        return true; // Return success since we saved to localStorage
     } catch (e) {
         console.error('Exception in logWordCount:', e);
         return true; // Return success to allow app to continue
@@ -46251,7 +46338,7 @@ async function logWordCount(wordCount) {
 }
 async function getTodayWordCount() {
     try {
-        const userId = getCurrentUserId();
+        const userId = getUserId();
         if (!userId) {
             console.log('No user ID found, returning 0 word count');
             return 0;
@@ -46294,7 +46381,7 @@ async function getTodayWordCount() {
     }
 }
 async function getWeeklyWordCount() {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
         console.error('User not authenticated');
         return 0;
@@ -46311,7 +46398,7 @@ async function getWeeklyWordCount() {
 }
 async function getTotalWordCount() {
     try {
-        const userId = getCurrentUserId();
+        const userId = getUserId();
         if (!userId) {
             console.error('User not authenticated');
             return 0;
@@ -46362,7 +46449,7 @@ async function getWeeklyStats() {
 }
 // Fetch user stats for a date range
 async function fetchWeeklyStats(startDate, endDate) {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
         console.error('User not authenticated');
         return [];
@@ -46394,97 +46481,163 @@ async function updateUserStats(statsUpdate) {
     // Ensure words is never undefined
     const wordCount = statsUpdate.words || 0;
     try {
-        const userId = getCurrentUserId();
+        const userId = getUserId();
         if (!userId) {
             console.log('No user ID found, cannot update stats');
             return false;
         }
-        // Always save to local storage as reliable backup
-        saveStatsLocally(userId, wordCount);
+        // Always save to local storage immediately for reliable backup
+        try {
+            saveStatsLocally(userId, wordCount);
+            console.log(`Stats saved locally successfully for user: ${userId}`);
+        } catch (localSaveError) {
+            console.error('Failed to save stats locally:', localSaveError);
+        }
+        // Skip Supabase operations if user ID starts with 'LOCAL-'
+        if (userId.startsWith('LOCAL-')) {
+            console.log('Using local-only mode for stats, skipping Supabase updates');
+            return true;
+        }
+        // For demo users, also skip Supabase for better performance
+        if (userId.startsWith('DEMO')) {
+            console.log('Demo user detected, using localStorage only for better performance');
+            return true;
+        }
         const today = new Date().toISOString().split('T')[0];
+        // Log the update attempt for debugging
+        console.log(`Updating stats for user ${userId}: +${wordCount} words, date: ${today}`);
         // Try to update daily stats
         try {
-            // Find existing daily stats
-            const { data: existingDailyStats, error: fetchError } = await supabase.from('user_daily_stats').select('*').eq('user_id', userId).eq('date', today).single();
-            if (fetchError && fetchError.code !== 'PGRST116') // PGRST116 means no rows found, which is fine - we'll create a new record
-            console.log('No existing daily stats found, will create new entry');
-            if (existingDailyStats) {
-                // Update existing record - use match criteria instead of ID
-                const { error } = await supabase.from('user_daily_stats').update({
-                    total_words: (existingDailyStats.total_words || 0) + wordCount
-                }).eq('user_id', userId).eq('date', today);
-                if (error) {
-                    console.log('Error updating daily stats, trying insert instead:', error);
-                    // If update fails, try insert as fallback
-                    await createNewDailyStats(userId, today, wordCount);
+            // Find existing daily stats - use simpler query
+            const { data: existingDailyStats, error: fetchError } = await supabase.from('user_daily_stats').select('id, total_words').eq('user_id', userId).eq('date', today).maybeSingle();
+            if (fetchError) {
+                console.error('Error fetching daily stats:', fetchError.message, fetchError.details);
+                console.log('Using localStorage fallback for stats');
+            } else if (existingDailyStats) // Update existing record with minimal data
+            try {
+                console.log(`Updating daily stats record id: ${existingDailyStats.id}`);
+                console.log(`Current total words: ${existingDailyStats.total_words || 0}, adding ${wordCount}`);
+                // Handle update with more error catching
+                try {
+                    const updateResult = await supabase.from('user_daily_stats').update({
+                        total_words: (existingDailyStats.total_words || 0) + wordCount,
+                        last_updated: new Date().toISOString()
+                    }).eq('id', existingDailyStats.id);
+                    const error = updateResult.error;
+                    if (error) {
+                        // Use separate log statements to avoid errors in compilation
+                        console.log('Error updating daily stats');
+                        console.log('Error message:', error.message);
+                        if (error.details) console.log('Error details:', error.details);
+                    } else console.log(`Successfully updated daily stats for ${userId}`);
+                } catch (innerUpdateError) {
+                    console.log('Exception in supabase update operation:', innerUpdateError);
                 }
-            } else // Create new record
-            await createNewDailyStats(userId, today, wordCount);
+            } catch (updateError) {
+                console.log('Exception in update daily stats block:', updateError);
+            }
+            else // Create new record
+            try {
+                await createNewDailyStats(userId, today, wordCount);
+            } catch (createError) {
+                console.log('Exception creating daily stats:', createError);
+            }
         } catch (dailyStatsError) {
-            console.log('Error handling daily stats:', dailyStatsError);
-        // Continue with total stats even if daily stats fail
+            console.log('Error in daily stats handling:', dailyStatsError);
         }
         // Try to update total user stats
         try {
-            // Find existing user stats
-            const { data: existingUserStats, error: fetchError } = await supabase.from('user_stats').select('*').eq('user_id', userId).single();
-            if (fetchError && fetchError.code !== 'PGRST116') console.log('No existing user stats found, will create new entry');
-            if (existingUserStats) {
-                // Update existing record
+            // Find existing user stats - use simpler query
+            const { data: existingUserStats, error: fetchError } = await supabase.from('user_stats').select('id, words').eq('user_id', userId).maybeSingle();
+            if (fetchError) {
+                console.error('Error fetching user stats:', fetchError.message, fetchError.details);
+                console.log('Using localStorage fallback for total stats');
+            } else if (existingUserStats) // Update existing record with minimal data
+            try {
                 const { error } = await supabase.from('user_stats').update({
                     words: (existingUserStats.words || 0) + wordCount,
-                    texts: (existingUserStats.texts || 0) + (statsUpdate.texts || 0),
-                    time_spent_seconds: (existingUserStats.time_spent_seconds || 0) + (statsUpdate.timeSpentSeconds || 0),
-                    speed: statsUpdate.speed || existingUserStats.speed || 0
-                }).eq('user_id', userId);
-                if (error) {
-                    console.log('Error updating user stats, trying insert instead:', error);
-                    // If update fails, try insert as fallback
-                    await createNewUserStats(userId, statsUpdate);
-                }
-            } else // Create new record
-            await createNewUserStats(userId, statsUpdate);
+                    last_updated: new Date().toISOString()
+                }).eq('id', existingUserStats.id);
+                if (error) console.error('Error updating user stats:', error.message, error.details);
+                else console.log(`Successfully updated total stats for ${userId}`);
+            } catch (updateError) {
+                console.error('Exception updating user stats:', updateError);
+            }
+            else // Create new record
+            try {
+                await createNewUserStats(userId, statsUpdate);
+            } catch (createError) {
+                console.error('Exception creating user stats:', createError);
+            }
         } catch (userStatsError) {
-            console.log('Error handling user stats:', userStatsError);
-        // Still return true to not block the user experience
+            console.error('Error handling user stats:', userStatsError);
         }
-        return true; // Return success to allow app to continue even with DB errors
+        return true; // Return success since we've saved to localStorage
     } catch (e) {
-        console.log('Exception in updateUserStats (continuing anyway):', e);
+        console.error('Exception in updateUserStats:', e);
         return true; // Return success to allow app to continue even with errors
     }
 }
 // Helper function to create new daily stats
 async function createNewDailyStats(userId, date, words) {
     try {
-        const { error } = await supabase.from('user_daily_stats').insert({
+        console.log(`Creating new daily stats for ${userId} on ${date} with ${words || 0} words`);
+        // Simplify data to reduce chances of validation errors
+        const newDailyStats = {
             user_id: userId,
             date: date,
-            total_words: words || 0 // Ensure words is never null
-        });
-        if (error) console.log('Could not create daily stats:', error);
+            total_words: words || 0
+        };
+        console.log('Inserting daily stats record');
+        const { error } = await supabase.from('user_daily_stats').insert(newDailyStats);
+        if (error) {
+            console.error('Could not create daily stats:', error.message, error.details);
+            // Try upsert as an alternative if insert fails
+            if (error.code === '23505') {
+                console.log('Attempting upsert as fallback for daily stats');
+                const { error: upsertError } = await supabase.from('user_daily_stats').upsert(newDailyStats);
+                if (upsertError) console.error('Upsert also failed for daily stats:', upsertError.message);
+                else console.log('Successfully upserted daily stats');
+            }
+        } else console.log('Successfully created daily stats');
     } catch (e) {
-        console.log('Exception creating daily stats:', e);
+        console.error('Exception creating daily stats:', e);
     }
 }
 // Helper function to create new user stats
 async function createNewUserStats(userId, stats) {
     try {
-        const { error } = await supabase.from('user_stats').insert({
+        console.log(`Creating new user stats for ${userId} with ${stats.words || 0} words`);
+        // Simplify data to reduce chances of validation errors
+        const newUserStats = {
             user_id: userId,
-            words: stats.words || 0,
-            texts: stats.texts || 0,
-            time_spent_seconds: stats.timeSpentSeconds || 0,
-            speed: stats.speed || 0
-        });
-        if (error) console.log('Could not create user stats:', error);
+            words: stats.words || 0
+        };
+        console.log('Inserting user stats record');
+        const { error } = await supabase.from('user_stats').insert(newUserStats);
+        if (error) {
+            console.error('Could not create user stats:', error.message, error.details);
+            // Try upsert as an alternative if insert fails
+            if (error.code === '23505') {
+                console.log('Attempting upsert as fallback for user stats');
+                const { error: upsertError } = await supabase.from('user_stats').upsert(newUserStats);
+                if (upsertError) console.error('Upsert also failed for user stats:', upsertError.message);
+                else console.log('Successfully upserted user stats');
+            }
+        } else console.log('Successfully created user stats');
     } catch (e) {
-        console.log('Exception creating user stats:', e);
+        console.error('Exception creating user stats:', e);
     }
 }
 // Save stats to localStorage
 function saveStatsLocally(userId, wordCount) {
     try {
+        if (wordCount <= 0) {
+            console.log('Skipping local stats update for zero or negative word count');
+            return;
+        }
+        // Log the word count being added
+        console.log(`saveStatsLocally: Adding ${wordCount} words for user ${userId}`);
         const statsKey = `${userId}_word_stats`;
         const statsJson = localStorage.getItem(statsKey);
         let stats = {
@@ -46498,15 +46651,22 @@ function saveStatsLocally(userId, wordCount) {
             console.error('Error parsing local stats:', e);
         }
         const today = new Date().toISOString().split('T')[0];
-        // If last update was on a different day, reset today's words
-        if (stats.lastUpdated !== today) stats.todayWords = 0;
+        // Check if this is a new day
+        if (stats.lastUpdated !== today) {
+            console.log(`New day detected: Resetting today's words from ${stats.todayWords} to 0`);
+            stats.todayWords = 0;
+        }
+        // For tracking and debugging
+        console.log(`saveStatsLocally - Before: totalWords=${stats.totalWords}, todayWords=${stats.todayWords}, adding: ${wordCount}`);
         // Update stats
         stats.totalWords += wordCount;
         stats.todayWords += wordCount;
         stats.lastUpdated = today;
         // Save back to localStorage
         localStorage.setItem(statsKey, JSON.stringify(stats));
-        console.log('Stats saved locally');
+        console.log(`saveStatsLocally - After: totalWords=${stats.totalWords}, todayWords=${stats.todayWords}`);
+        // Force a refresh of the stats key to ensure other components pick up the change
+        localStorage.setItem('stats_last_updated', Date.now().toString());
     } catch (e) {
         console.error('Error saving stats locally:', e);
     }
@@ -46536,6 +46696,51 @@ function getLocalStats(userId) {
     } catch (e) {
         console.error('Error getting local stats:', e);
         return null;
+    }
+}
+// NEW: Function to ensure a user ID is initialized in all necessary tables
+async function ensureUserInitialized(userId) {
+    if (!userId) return;
+    // Skip for local and demo users
+    if (userId.startsWith('LOCAL-') || userId.startsWith('DEMO')) {
+        console.log(`Skipping database initialization for local/demo user ${userId}`);
+        return;
+    }
+    console.log(`Ensuring user ${userId} is initialized in all tables`);
+    // Set the initialized flag to avoid multiple initializations in the same session
+    const initKey = `user_${userId}_initialized`;
+    if (localStorage.getItem(initKey)) {
+        console.log(`User ${userId} already initialized in this session`);
+        return;
+    }
+    // Set initialized flag immediately to prevent multiple attempts in rapid succession
+    localStorage.setItem(initKey, 'true');
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        // Try to initialize user_stats - simplified data
+        try {
+            const { error } = await supabase.from('user_stats').insert({
+                user_id: userId,
+                words: 0
+            });
+            if (error && error.code !== '23505') console.error('Error initializing user_stats:', error.message);
+        } catch (e) {
+            console.error('Exception initializing user_stats:', e);
+        }
+        // Try to initialize user_daily_stats - simplified data
+        try {
+            const { error } = await supabase.from('user_daily_stats').insert({
+                user_id: userId,
+                date: today,
+                total_words: 0
+            });
+            if (error && error.code !== '23505') console.error('Error initializing user_daily_stats:', error.message);
+        } catch (e) {
+            console.error('Exception initializing user_daily_stats:', e);
+        }
+        console.log(`Initialization attempted for user ${userId}`);
+    } catch (error) {
+        console.error(`Error initializing user ${userId}:`, error);
     }
 }
 
@@ -56064,6 +56269,7 @@ function ArticlePage() {
     const [isTyping, setIsTyping] = (0, _react.useState)(false);
     const [isMobile, setIsMobile] = (0, _react.useState)(false);
     const [isStatsExpanded, setIsStatsExpanded] = (0, _react.useState)(false);
+    const [isTogglingStats, setIsTogglingStats] = (0, _react.useState)(false);
     // State for content set with paragraphs and wisdom sections
     const [contentSet, setContentSet] = (0, _react.useState)(null);
     const [isLoading, setIsLoading] = (0, _react.useState)(true);
@@ -56126,11 +56332,28 @@ function ArticlePage() {
                 // Fetch content
                 const content = await (0, _contentService.getCurrentContent)();
                 setContentSet(content);
-                // Fetch user stats
-                const userStats = await (0, _statsService.getTodayStats)();
+                // Get stats from localStorage first for immediate feedback
+                const localTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+                const today = new Date().toISOString().split('T')[0];
+                const todayKey = `words_${today}`;
+                const localTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
+                console.log(`Retrieved stats from localStorage: total words: ${localTotalWords}, today: ${localTodayWords}`);
+                // Set initial stats from localStorage
                 setStats({
-                    words: userStats.words
+                    words: localTotalWords
                 });
+                // Then fetch from server to update if available
+                try {
+                    const userStats = await (0, _statsService.getTodayStats)();
+                    if (userStats.words > 0) {
+                        setStats({
+                            words: userStats.words
+                        });
+                        console.log(`Updated stats from server: ${userStats.words} words`);
+                    }
+                } catch (statsError) {
+                    console.error('Failed to fetch stats from server, using localStorage only:', statsError);
+                }
                 // If active index is set but paragraph is already completed, reset it
                 const savedIndex = localStorage.getItem('activeParaIndex');
                 if (savedIndex && savedIndex !== 'null' && content && content.paragraphs) {
@@ -56199,29 +56422,52 @@ function ArticlePage() {
             block: 'center'
         });
     }, []);
-    // Modified success handler to track completed paragraph and move to next paragraph
+    // Handler for paragraph completion
     const handleParagraphComplete = (0, _react.useCallback)(async (index)=>{
-        if (!contentSet || !contentSet.paragraphs || index < 0 || index >= contentSet.paragraphs.length) {
-            console.error('Cannot complete paragraph: Content not loaded or paragraph index invalid');
-            return;
-        }
-        // Clear saved typing progress
         localStorage.removeItem('typedContent');
         localStorage.removeItem('progress');
         setShowSuccess(index);
         try {
+            if (!contentSet || !contentSet.paragraphs) {
+                console.error('Cannot complete paragraph: Content not loaded');
+                return;
+            }
+            console.log(`Completing paragraph ${index + 1} of ${contentSet.paragraphs.length}`);
             // Mark paragraph as completed in content service
             const paragraphId = contentSet.paragraphs[index].id;
             const updatedContentSet = await (0, _contentService.completeParagraph)(paragraphId);
             setContentSet(updatedContentSet);
+            // Calculate word count for better tracking
+            const paragraphContent = contentSet.paragraphs[index].content;
+            const wordCount = paragraphContent.trim().split(/\s+/).length;
+            console.log(`Paragraph completed with ${wordCount} words`);
             setIsTyping(false);
             // Track completed paragraph in stats - now only tracking words
             const userStats = await (0, _statsService.trackCompletedParagraph)(contentSet.paragraphs[index].content);
+            console.log('Updated user stats:', userStats);
+            // Update stats in the UI immediately
             setStats({
                 words: userStats.words
             });
-            // Trigger a refresh of stats components
-            setStatsRefreshKey((prev)=>prev + 1);
+            // Force clear any cached data to ensure fresh stats
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const todayKey = `words_${today}`;
+                const todayWords = localStorage.getItem(todayKey);
+                console.log(`Today's words after paragraph completion: ${todayWords || '0'}`);
+            } catch (e) {
+                console.error('Error checking localStorage stats:', e);
+            }
+            // Trigger a refresh of stats components after a short delay
+            // This delay ensures all database operations have completed
+            setTimeout(()=>{
+                console.log('Refreshing stats with new refreshKey');
+                setStatsRefreshKey((prevKey)=>{
+                    const newKey = prevKey + 1;
+                    console.log(`Stats refresh key updated: ${prevKey} -> ${newKey}`);
+                    return newKey;
+                });
+            }, 800); // Increase delay to ensure updates are complete
             // Set a timeout to move to the next paragraph after showing success message
             setTimeout(()=>{
                 setActiveIndex(null);
@@ -56237,7 +56483,8 @@ function ArticlePage() {
                         setIsTyping(true);
                         // Scroll to the next paragraph
                         scrollToParagraph(nextIndex);
-                    }
+                        console.log(`Moving to next paragraph (index: ${nextIndex})`);
+                    } else console.log('No more uncompleted paragraphs to move to');
                 }
             }, 1500);
         } catch (error) {
@@ -56245,7 +56492,8 @@ function ArticlePage() {
         }
     }, [
         contentSet,
-        scrollToParagraph
+        scrollToParagraph,
+        statsRefreshKey
     ]);
     // Modified handleKeyPress to use the new completion handler
     const handleKeyPress = (0, _react.useCallback)((e)=>{
@@ -56320,7 +56568,14 @@ function ArticlePage() {
     };
     // Toggle stats expansion
     const toggleStatsExpansion = ()=>{
+        // Add debounce to prevent multiple rapid toggles
+        if (isTogglingStats) return;
+        setIsTogglingStats(true);
         setIsStatsExpanded(!isStatsExpanded);
+        // Reset toggle lock after a short delay
+        setTimeout(()=>{
+            setIsTogglingStats(false);
+        }, 500);
     };
     // Handler for marking wisdom sections as read
     const handleWisdomSectionClick = async (sectionId)=>{
@@ -56385,7 +56640,7 @@ function ArticlePage() {
                         refreshKey: statsRefreshKey
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 459,
+                        lineNumber: 519,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _totalStatsDefault.default), {
@@ -56393,13 +56648,13 @@ function ArticlePage() {
                         refreshKey: statsRefreshKey
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 460,
+                        lineNumber: 520,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 458,
+                lineNumber: 518,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56408,18 +56663,18 @@ function ArticlePage() {
                     refreshKey: statsRefreshKey
                 }, void 0, false, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 463,
+                    lineNumber: 523,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 462,
+                lineNumber: 522,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/pages/ArticlePage.tsx",
-        lineNumber: 457,
+        lineNumber: 517,
         columnNumber: 5
     }, this);
     // Loading state
@@ -56428,7 +56683,7 @@ function ArticlePage() {
         message: "Straipsnis kraunamas..."
     }, void 0, false, {
         fileName: "src/pages/ArticlePage.tsx",
-        lineNumber: 470,
+        lineNumber: 530,
         columnNumber: 12
     }, this);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("main", {
@@ -56442,14 +56697,14 @@ function ArticlePage() {
                 speed: 0
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 476,
+                lineNumber: 536,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _audioPlayerDefault.default), {
                 defaultVolume: 0.3
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 484,
+                lineNumber: 544,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("header", {
@@ -56471,7 +56726,7 @@ function ArticlePage() {
                         children: "Readleta"
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 487,
+                        lineNumber: 547,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("nav", {
@@ -56479,13 +56734,13 @@ function ArticlePage() {
                         children: "Tik tiems, kurie ie\u0161ko giliau"
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 495,
+                        lineNumber: 555,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 486,
+                lineNumber: 546,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56502,13 +56757,13 @@ function ArticlePage() {
                                     className: `absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 ${isStatsExpanded ? 'scale-x-100' : ''} transition-transform duration-300`
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 508,
+                                    lineNumber: 568,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 503,
+                            lineNumber: 563,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
@@ -56519,13 +56774,13 @@ function ArticlePage() {
                                     className: "absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 512,
+                                    lineNumber: 572,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 510,
+                            lineNumber: 570,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
@@ -56536,27 +56791,28 @@ function ArticlePage() {
                                     className: "absolute -bottom-0.5 left-0 w-full h-[1px] bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 516,
+                                    lineNumber: 576,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 514,
+                            lineNumber: 574,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 502,
+                    lineNumber: 562,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 501,
+                lineNumber: 561,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.AnimatePresence), {
+                mode: "wait",
                 children: isStatsExpanded && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
                     initial: {
                         opacity: 0,
@@ -56565,7 +56821,7 @@ function ArticlePage() {
                     },
                     animate: {
                         opacity: 1,
-                        height: 'auto',
+                        height: 500,
                         marginBottom: 20
                     },
                     exit: {
@@ -56574,15 +56830,16 @@ function ArticlePage() {
                         marginBottom: 0
                     },
                     transition: {
-                        duration: 0.3
+                        duration: 0.4,
+                        ease: "easeInOut"
                     },
-                    className: "w-full max-w-6xl bg-white rounded-xl shadow-md overflow-hidden",
+                    className: "w-full max-w-6xl bg-white rounded-xl shadow-md overflow-y-auto",
                     children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                         className: "p-6 relative",
                         children: [
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
                                 onClick: toggleStatsExpansion,
-                                className: "absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors",
+                                className: "absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors z-10",
                                 "aria-label": "Close",
                                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("svg", {
                                     xmlns: "http://www.w3.org/2000/svg",
@@ -56595,34 +56852,34 @@ function ArticlePage() {
                                         clipRule: "evenodd"
                                     }, void 0, false, {
                                         fileName: "src/pages/ArticlePage.tsx",
-                                        lineNumber: 539,
+                                        lineNumber: 602,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 538,
+                                    lineNumber: 601,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 533,
+                                lineNumber: 596,
                                 columnNumber: 15
                             }, this),
                             statsSection
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 531,
+                        lineNumber: 594,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 524,
+                    lineNumber: 584,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 522,
+                lineNumber: 582,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -56659,7 +56916,7 @@ function ArticlePage() {
                                 children: contentSet.title
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 563,
+                                lineNumber: 626,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -56667,13 +56924,13 @@ function ArticlePage() {
                                 children: contentSet.subtitle
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 566,
+                                lineNumber: 629,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 557,
+                        lineNumber: 620,
                         columnNumber: 9
                     }, this),
                     contentSet.paragraphs.map((paragraph, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56686,12 +56943,12 @@ function ArticlePage() {
                                         children: index + 1
                                     }, void 0, false, {
                                         fileName: "src/pages/ArticlePage.tsx",
-                                        lineNumber: 577,
+                                        lineNumber: 640,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 574,
+                                    lineNumber: 637,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56716,7 +56973,7 @@ function ArticlePage() {
                                                             children: typedContent
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 598,
+                                                            lineNumber: 661,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -56724,7 +56981,7 @@ function ArticlePage() {
                                                             children: paragraph.content.slice(typedContent.length)
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 599,
+                                                            lineNumber: 662,
                                                             columnNumber: 23
                                                         }, this),
                                                         isMobile && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
@@ -56735,7 +56992,7 @@ function ArticlePage() {
                                                             inputMode: "text"
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 603,
+                                                            lineNumber: 666,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
@@ -56744,17 +57001,17 @@ function ArticlePage() {
                                                     children: paragraph.content
                                                 }, void 0, false, {
                                                     fileName: "src/pages/ArticlePage.tsx",
-                                                    lineNumber: 613,
+                                                    lineNumber: 676,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 593,
+                                                lineNumber: 656,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 592,
+                                            lineNumber: 655,
                                             columnNumber: 15
                                         }, this),
                                         showSuccess === index && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -56776,12 +57033,12 @@ function ArticlePage() {
                                                 children: "Puikiai"
                                             }, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 626,
+                                                lineNumber: 689,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 620,
+                                            lineNumber: 683,
                                             columnNumber: 17
                                         }, this),
                                         activeIndex === index && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56793,31 +57050,31 @@ function ArticlePage() {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 635,
+                                                lineNumber: 698,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 634,
+                                            lineNumber: 697,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 585,
+                                    lineNumber: 648,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, paragraph.id, true, {
                             fileName: "src/pages/ArticlePage.tsx",
-                            lineNumber: 572,
+                            lineNumber: 635,
                             columnNumber: 11
                         }, this)),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                         className: "w-full h-px bg-gray-200 my-6"
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 646,
+                        lineNumber: 709,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.motion).div, {
@@ -56868,12 +57125,12 @@ function ArticlePage() {
                                             className: `${textColorClass} shrink-0 mt-1`,
                                             children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(SectionIcon, {}, void 0, false, {
                                                 fileName: "src/pages/ArticlePage.tsx",
-                                                lineNumber: 678,
+                                                lineNumber: 741,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 677,
+                                            lineNumber: 740,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -56887,7 +57144,7 @@ function ArticlePage() {
                                                             children: section.title
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 682,
+                                                            lineNumber: 745,
                                                             columnNumber: 23
                                                         }, this),
                                                         section.completed && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -56895,13 +57152,13 @@ function ArticlePage() {
                                                             children: "Perskaityta \u2713"
                                                         }, void 0, false, {
                                                             fileName: "src/pages/ArticlePage.tsx",
-                                                            lineNumber: 684,
+                                                            lineNumber: 747,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "src/pages/ArticlePage.tsx",
-                                                    lineNumber: 681,
+                                                    lineNumber: 744,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -56909,36 +57166,36 @@ function ArticlePage() {
                                                     children: section.content
                                                 }, void 0, false, {
                                                     fileName: "src/pages/ArticlePage.tsx",
-                                                    lineNumber: 687,
+                                                    lineNumber: 750,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/pages/ArticlePage.tsx",
-                                            lineNumber: 680,
+                                            lineNumber: 743,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 676,
+                                    lineNumber: 739,
                                     columnNumber: 17
                                 }, this)
                             }, section.id, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 667,
+                                lineNumber: 730,
                                 columnNumber: 15
                             }, this);
                         })
                     }, void 0, false, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 649,
+                        lineNumber: 712,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 550,
+                lineNumber: 613,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _framerMotion.AnimatePresence), {
@@ -56967,7 +57224,7 @@ function ArticlePage() {
                                 children: "Sekanti serija"
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 712,
+                                lineNumber: 775,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("svg", {
@@ -56981,38 +57238,38 @@ function ArticlePage() {
                                     clipRule: "evenodd"
                                 }, void 0, false, {
                                     fileName: "src/pages/ArticlePage.tsx",
-                                    lineNumber: 714,
+                                    lineNumber: 777,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/pages/ArticlePage.tsx",
-                                lineNumber: 713,
+                                lineNumber: 776,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/pages/ArticlePage.tsx",
-                        lineNumber: 708,
+                        lineNumber: 771,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "src/pages/ArticlePage.tsx",
-                    lineNumber: 701,
+                    lineNumber: 764,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/pages/ArticlePage.tsx",
-                lineNumber: 699,
+                lineNumber: 762,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/pages/ArticlePage.tsx",
-        lineNumber: 474,
+        lineNumber: 534,
         columnNumber: 5
     }, this);
 }
-_s(ArticlePage, "7P9tYyCHn/CR9UACMmm6GV3dfhs=");
+_s(ArticlePage, "s6yU5DRqrkXPXHtQPkg3lky4Rqg=");
 _c = ArticlePage;
 // Add these styles to your CSS file
 const styles = `
@@ -57515,11 +57772,23 @@ async function getTodayStats() {
     };
 }
 async function updateWordCount(newWords) {
-    // Log the new words to Supabase
+    console.log(`updateWordCount called with ${newWords} words`);
+    // Get the current counts (don't add yet, just retrieve them)
+    const existingWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+    // Get today's date in ISO format (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    const todayKey = `words_${today}`;
+    const existingTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
+    console.log(`Current stats before update - Total: ${existingWords}, Today: ${existingTodayWords}`);
+    // Log the new words to Supabase, which will also update localStorage via saveStatsLocally
     await (0, _supabaseClient.logWordCount)(newWords);
+    // After Supabase update, get the latest counts
+    const updatedTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+    const updatedTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
+    console.log(`updateWordCount - Total words: ${updatedTotalWords}, Today's words: ${updatedTodayWords}`);
     // Return the updated stats (for UI immediate feedback)
     return {
-        words: await (0, _supabaseClient.getTotalWordCount)(),
+        words: updatedTotalWords,
         texts: 0,
         timeSpentSeconds: 0,
         speed: 0
@@ -57527,7 +57796,57 @@ async function updateWordCount(newWords) {
 }
 async function trackCompletedParagraph(text) {
     const wordCount = text.trim().split(/\s+/).length;
-    return updateWordCount(wordCount);
+    // Enhanced logging for stats update
+    console.log(`Tracking paragraph completion: ${wordCount} words`);
+    // Also save the paragraph ID and word count for extra reliability
+    try {
+        const paragraphsCompletedKey = 'paragraphs_completed';
+        const paragraphsCompleted = parseInt(localStorage.getItem(paragraphsCompletedKey) || '0', 10);
+        localStorage.setItem(paragraphsCompletedKey, (paragraphsCompleted + 1).toString());
+        const paragraphWordsKey = 'paragraph_words';
+        const paragraphWords = JSON.parse(localStorage.getItem(paragraphWordsKey) || '[]');
+        const newEntry = {
+            timestamp: new Date().toISOString(),
+            words: wordCount
+        };
+        paragraphWords.push(newEntry);
+        localStorage.setItem(paragraphWordsKey, JSON.stringify(paragraphWords));
+        console.log('Saved paragraph completion to localStorage:', newEntry);
+        // Update the paragraph count display immediately
+        const totalWordsKey = 'total_words';
+        const currentTotal = parseInt(localStorage.getItem(totalWordsKey) || '0', 10);
+        const newTotal = currentTotal + wordCount;
+        localStorage.setItem(totalWordsKey, newTotal.toString());
+        console.log(`Updated total_words in localStorage immediately: ${currentTotal} -> ${newTotal}`);
+    } catch (e) {
+        console.error('Error saving paragraph data to localStorage:', e);
+    }
+    try {
+        // First update the word count in Supabase and localStorage
+        console.log('Updating word count in Supabase and localStorage...');
+        const updatedStats = await updateWordCount(wordCount);
+        // After word count update, refresh the cache in weeklyStatsService
+        try {
+            console.log('Refreshing weekly stats cache...');
+            const { getWeeklyStats } = await require("ef87c16666e59779");
+            // Force a refresh of the weekly stats by calling it with the current week offset
+            await getWeeklyStats(0);
+            console.log('Weekly stats refreshed after paragraph completion');
+        } catch (error) {
+            console.error('Failed to refresh weekly stats:', error);
+        }
+        return updatedStats;
+    } catch (error) {
+        console.error('Error in tracking paragraph completion:', error);
+        // In case of error, still return something reasonable
+        const fallbackTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+        return {
+            words: fallbackTotalWords,
+            texts: 0,
+            timeSpentSeconds: 0,
+            speed: 0
+        };
+    }
 }
 async function trackTimeSpent(seconds) {
     // Currently not tracking time in Supabase
@@ -57549,7 +57868,10 @@ async function getWeeklyStatsForChart() {
         }));
 }
 
-},{"./supabaseClient":"jgwHA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hpaIY":[function(require,module,exports,__globalThis) {
+},{"./supabaseClient":"jgwHA","ef87c16666e59779":"4G8QY","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4G8QY":[function(require,module,exports,__globalThis) {
+module.exports = Promise.resolve(module.bundle.root("2q4G4"));
+
+},{"2q4G4":"2q4G4"}],"hpaIY":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$ddc2 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$ddc2.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -57691,28 +58013,79 @@ const chartOptions = {
 };
 function WeeklyPerformanceChart({ refreshKey = 0 }) {
     _s();
+    // Add local loading state for smoother transitions
+    const [isLocalLoading, setIsLocalLoading] = (0, _react.useState)(true);
+    // Add a tracking state for successful stats refresh
+    const [lastRefreshTime, setLastRefreshTime] = (0, _react.useState)(0);
     const { weeklyStats, loading, error, weekOffset, previousWeek, nextWeek, currentWeek, currentMonthName, currentYear, refreshStats } = (0, _useWeeklyStats.useWeeklyStats)();
-    // Refresh stats when refreshKey changes
-    (0, _reactDefault.default).useEffect(()=>{
-        if (refreshKey > 0) refreshStats();
+    // Add logging for when the component refreshes due to refreshKey changes
+    (0, _react.useEffect)(()=>{
+        console.log('WeeklyPerformanceChart: refreshKey changed to', refreshKey, 'refreshing stats');
+        // Set local loading to true for a smoother transition
+        setIsLocalLoading(true);
+        // Force a stats refresh every time the key changes
+        const now = Date.now();
+        setLastRefreshTime(now);
+        // Add a small delay to ensure the refresh is processed
+        const refreshTimer = setTimeout(()=>{
+            console.log('Executing refreshStats() from refreshKey effect');
+            refreshStats();
+        }, 200);
+        return ()=>clearTimeout(refreshTimer);
     }, [
         refreshKey,
         refreshStats
     ]);
+    // Manage local loading state
+    (0, _react.useEffect)(()=>{
+        if (!loading && weeklyStats) {
+            // Delay the loading transition slightly to avoid flickering
+            const loadingTimer = setTimeout(()=>{
+                setIsLocalLoading(false);
+            }, 200);
+            return ()=>clearTimeout(loadingTimer);
+        }
+    }, [
+        loading,
+        weeklyStats
+    ]);
+    // Log when weekly stats are updated
+    (0, _react.useEffect)(()=>{
+        if (weeklyStats) {
+            const totalWords = weeklyStats.days.reduce((sum, day)=>sum + day.words, 0);
+            console.log('WeeklyPerformanceChart: weekly stats updated', {
+                totalWords,
+                mostProductiveDay: weeklyStats.mostProductiveDayIndex,
+                dayCount: weeklyStats.days.length,
+                lastRefreshTime: new Date(lastRefreshTime).toISOString()
+            });
+        }
+    }, [
+        weeklyStats,
+        lastRefreshTime
+    ]);
     // If still loading or there's an error, show placeholder
-    if (loading) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-        className: "h-48 bg-gray-100 animate-pulse rounded-lg"
+    if (loading || isLocalLoading) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        className: "h-48 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center",
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+            className: "text-gray-400",
+            children: "Duomenys kraunami..."
+        }, void 0, false, {
+            fileName: "src/components/WeeklyPerformanceChart.tsx",
+            lineNumber: 127,
+            columnNumber: 9
+        }, this)
     }, void 0, false, {
         fileName: "src/components/WeeklyPerformanceChart.tsx",
-        lineNumber: 81,
-        columnNumber: 12
+        lineNumber: 126,
+        columnNumber: 7
     }, this);
     if (error || !weeklyStats) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         className: "h-48 bg-gray-100 flex items-center justify-center text-red-500",
         children: "Nepavyko u\u017Ekrauti duomen\u0173"
     }, void 0, false, {
         fileName: "src/components/WeeklyPerformanceChart.tsx",
-        lineNumber: 85,
+        lineNumber: 133,
         columnNumber: 12
     }, this);
     // Get the dates for the current week
@@ -57752,7 +58125,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                 children: "Savaitinis \u017Eod\u017Ei\u0173 skai\u010Dius"
             }, void 0, false, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 119,
+                lineNumber: 167,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57761,6 +58134,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
                         className: "p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors",
                         onClick: previousWeek,
+                        disabled: isLocalLoading,
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("svg", {
                             xmlns: "http://www.w3.org/2000/svg",
                             className: "h-5 w-5 text-gray-600",
@@ -57772,17 +58146,17 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 clipRule: "evenodd"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 127,
+                                lineNumber: 176,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/components/WeeklyPerformanceChart.tsx",
-                            lineNumber: 126,
+                            lineNumber: 175,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 122,
+                        lineNumber: 170,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57793,7 +58167,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 children: dateRangeText
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 131,
+                                lineNumber: 180,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -57805,28 +58179,29 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 132,
+                                lineNumber: 181,
                                 columnNumber: 11
                             }, this),
                             weekOffset !== 0 && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
                                 onClick: currentWeek,
                                 className: "ml-2 text-xs text-blue-500 hover:text-blue-700 font-lora",
+                                disabled: isLocalLoading,
                                 children: "(Dabartin\u0117 savait\u0117)"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 134,
+                                lineNumber: 183,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 130,
+                        lineNumber: 179,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
                         className: `p-2 rounded-full ${weekOffset < 0 ? 'bg-gray-100 hover:bg-gray-200' : 'bg-gray-100 opacity-50 cursor-not-allowed'} transition-colors`,
                         onClick: nextWeek,
-                        disabled: weekOffset >= 0,
+                        disabled: weekOffset >= 0 || isLocalLoading,
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("svg", {
                             xmlns: "http://www.w3.org/2000/svg",
                             className: "h-5 w-5 text-gray-600",
@@ -57838,23 +58213,23 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 clipRule: "evenodd"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 148,
+                                lineNumber: 198,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/components/WeeklyPerformanceChart.tsx",
-                            lineNumber: 147,
+                            lineNumber: 197,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 142,
+                        lineNumber: 192,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 121,
+                lineNumber: 169,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57873,7 +58248,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 children: (0, _weeklyStatsService.dayNames).short[index]
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 164,
+                                lineNumber: 214,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57884,12 +58259,12 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                     children: dayNum
                                 }, void 0, false, {
                                     fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                    lineNumber: 171,
+                                    lineNumber: 221,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 165,
+                                lineNumber: 215,
                                 columnNumber: 15
                             }, this),
                             isMostProductiveDay && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -57897,19 +58272,19 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 children: "\u2B50"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 174,
+                                lineNumber: 224,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, index, true, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 163,
+                        lineNumber: 213,
                         columnNumber: 13
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 154,
+                lineNumber: 204,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -57919,22 +58294,22 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                     options: chartOptions
                 }, void 0, false, {
                     fileName: "src/components/WeeklyPerformanceChart.tsx",
-                    lineNumber: 183,
+                    lineNumber: 233,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 182,
+                lineNumber: 232,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/components/WeeklyPerformanceChart.tsx",
-        lineNumber: 118,
+        lineNumber: 166,
         columnNumber: 5
     }, this);
 }
-_s(WeeklyPerformanceChart, "lGeGr4aRhTACSrVC6OS7LsWABLc=", false, function() {
+_s(WeeklyPerformanceChart, "g+hikW0lwcK9JqpFGgmEh8yrKEc=", false, function() {
     return [
         (0, _useWeeklyStats.useWeeklyStats)
     ];
@@ -71598,6 +71973,13 @@ function useWeeklyStats() {
         start: null,
         end: null
     });
+    // Add a cache timestamp to track when data was last fetched
+    const [lastFetchTime, setLastFetchTime] = (0, _react.useState)(0);
+    const CACHE_TIMEOUT = 2000; // 2 seconds in milliseconds
+    // Use a ref to track if a fetch is in progress to prevent duplicate fetches
+    const isFetchingRef = (0, _react.useRef)(false);
+    // Use a ref for the last requested weekOffset to ensure we're getting the right data
+    const lastRequestedOffsetRef = (0, _react.useRef)(weekOffset);
     // Get current month and year for display
     const getFormattedDate = (0, _react.useCallback)(()=>{
         // If we have actual week dates, use those
@@ -71659,40 +72041,106 @@ function useWeeklyStats() {
         setWeekOffset(0);
     }, []);
     // Fetch weekly stats data
-    const fetchWeeklyStats = (0, _react.useCallback)(async ()=>{
+    const fetchWeeklyStats = (0, _react.useCallback)(async (forceRefresh = false)=>{
+        // Skip if a fetch is already in progress
+        if (isFetchingRef.current) {
+            console.log('Weekly stats fetch already in progress, skipping');
+            return;
+        }
+        // Skip fetching if we have recent data and not forcing refresh
+        const now = Date.now();
+        if (!forceRefresh && weeklyStats && now - lastFetchTime < CACHE_TIMEOUT) {
+            console.log('Using cached weekly stats data (fetched within last 2 seconds)');
+            return;
+        }
+        // Mark that we're starting a fetch
+        isFetchingRef.current = true;
         setLoading(true);
+        // Save the current week offset for this fetch
+        lastRequestedOffsetRef.current = weekOffset;
         try {
-            const stats = await (0, _weeklyStatsService.getWeeklyStats)(weekOffset);
-            setWeeklyStats(stats);
-            // Set week start and end dates
-            if (stats.days.length > 0) {
-                const startDate = new Date(stats.days[0].date);
-                const endDate = new Date(stats.days[stats.days.length - 1].date);
-                setWeekDates({
-                    start: startDate,
-                    end: endDate
-                });
+            console.log(`Fetching weekly stats with offset: ${weekOffset}${forceRefresh ? ' (forced refresh)' : ''}`);
+            // Clear localStorage cache for today to force fetching fresh data
+            if (forceRefresh) try {
+                const today = new Date().toISOString().split('T')[0];
+                const cacheKey = `stats_cache_${weekOffset}_${today}`;
+                localStorage.removeItem(cacheKey);
+                console.log('Cleared cache for weekly stats to force refresh');
+            } catch (e) {
+                console.error('Error clearing cache:', e);
             }
-            setError(null);
+            const stats = await (0, _weeklyStatsService.getWeeklyStats)(weekOffset);
+            // Only update state if the week offset hasn't changed during the fetch
+            // This prevents race conditions where an older fetch overwrites newer data
+            if (lastRequestedOffsetRef.current === weekOffset) {
+                // Log the stats for debugging
+                const totalWords = stats.days.reduce((sum, day)=>sum + (day.words || 0), 0);
+                console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${stats.mostProductiveDayIndex}`);
+                setWeeklyStats(stats);
+                setLastFetchTime(now);
+                // Set week start and end dates
+                if (stats.days.length > 0) {
+                    const startDate = new Date(stats.days[0].date);
+                    const endDate = new Date(stats.days[stats.days.length - 1].date);
+                    setWeekDates({
+                        start: startDate,
+                        end: endDate
+                    });
+                    console.log(`Week date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+                }
+                setError(null);
+            } else console.log('Week offset changed during fetch, discarding results');
         } catch (err) {
+            console.error('Error fetching weekly stats:', err);
             setError(err instanceof Error ? err : new Error('Failed to fetch weekly stats'));
         } finally{
             setLoading(false);
+            // Mark fetch as complete after a small delay to prevent immediate duplicate fetches
+            setTimeout(()=>{
+                isFetchingRef.current = false;
+            }, 300);
         }
     }, [
-        weekOffset
+        weekOffset,
+        weeklyStats,
+        lastFetchTime
     ]);
     // Function to manually refresh stats
     const refreshStats = (0, _react.useCallback)(()=>{
-        fetchWeeklyStats();
+        console.log('Manual refresh of weekly stats requested');
+        // Force refresh of localStorage data first
+        try {
+            const userId = localStorage.getItem('current_user_id');
+            if (userId) {
+                // Clear any localStorage cache for the current week to force fresh data
+                const today = new Date().toISOString().split('T')[0];
+                const cacheKey = `stats_cache_${weekOffset}_${today}`;
+                localStorage.removeItem(cacheKey);
+                // Get today's date in ISO format (YYYY-MM-DD)
+                const todayKey = `words_${today}`;
+                // Re-read today's word count from localStorage
+                const todayWords = localStorage.getItem(todayKey);
+                console.log(`Today's words before refresh: ${todayWords || '0'}`);
+                // Clear isFetching flag to ensure we fetch new data
+                isFetchingRef.current = false;
+            }
+        } catch (e) {
+            console.error('Error clearing stats cache:', e);
+        }
+        // Force refresh with a slight delay to allow any pending state updates
+        setTimeout(()=>{
+            fetchWeeklyStats(true); // Force refresh 
+        }, 300);
     }, [
-        fetchWeeklyStats
+        fetchWeeklyStats,
+        weekOffset
     ]);
     // Fetch stats on mount and when weekOffset changes
     (0, _react.useEffect)(()=>{
         let isMounted = true;
         const fetchData = async ()=>{
             if (!isMounted) return;
+            console.log('Initial fetch of weekly stats');
             await fetchWeeklyStats();
         };
         fetchData();
@@ -71858,6 +72306,24 @@ async function getWeeklyStats(weekOffset = 0) {
             return generateEmptyWeeklyStats(weekOffset);
         }
         const { start, end } = getWeekDates(weekOffset);
+        // ALWAYS check localStorage for today's data first
+        console.log(`Fetching weekly stats for week offset ${weekOffset}, date range: ${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}`);
+        // First check localStorage for word counts to improve reliability
+        const localData = getLocalWordCountsByDay(userId, start, end);
+        // Print daily local data for debugging
+        if (localData && localData.length > 0) {
+            const totalLocalWords = localData.reduce((sum, day)=>sum + day.total_words, 0);
+            console.log(`Found local data for ${localData.length} days, total words: ${totalLocalWords}`);
+            // Print each day's count for debugging
+            localData.forEach((day)=>{
+                console.log(`Local data for ${day.date}: ${day.total_words} words`);
+            });
+        }
+        if (localData && localData.length > 0 && hasWordCounts(localData)) {
+            console.log('Using locally stored word counts for weekly stats');
+            return processStatsData(localData, weekOffset);
+        }
+        // If no local data, fall back to Supabase
         const { data, error } = await supabase.from('user_daily_stats').select('date, total_words').eq('user_id', userId).gte('date', start.toISOString().split('T')[0]).lte('date', end.toISOString().split('T')[0]).order('date');
         if (error) {
             console.error('Failed to fetch weekly stats:', error);
@@ -71870,6 +72336,54 @@ async function getWeeklyStats(weekOffset = 0) {
     } catch (e) {
         console.error('Error in getWeeklyStats:', e);
         return generateEmptyWeeklyStats(weekOffset);
+    }
+}
+// Helper function to check if any day has word counts
+function hasWordCounts(data) {
+    return data.some((day)=>day.total_words > 0);
+}
+// Get word counts from localStorage
+function getLocalWordCountsByDay(userId, startDate, endDate) {
+    try {
+        const result = [];
+        const current = new Date(startDate);
+        // Check if we have any data in localStorage
+        const statsKey = `${userId}_word_stats`;
+        const statsJson = localStorage.getItem(statsKey);
+        // Get today's date for special handling of current day
+        const today = new Date().toISOString().split('T')[0];
+        // Look for daily word counts saved in localStorage
+        while(current <= endDate){
+            const dateStr = current.toISOString().split('T')[0];
+            const isToday = dateStr === today;
+            // For today, use the most recent data from the 'words_DATE' key format
+            // which gets updated after each paragraph completion
+            if (isToday) {
+                const todayKey = `words_${dateStr}`;
+                const todayWords = localStorage.getItem(todayKey);
+                console.log(`Checking today's local data for ${dateStr}: ${todayWords || 0} words`);
+                result.push({
+                    date: dateStr,
+                    total_words: todayWords ? parseInt(todayWords, 10) : 0
+                });
+            } else {
+                // For past days, use the regular key format
+                const dayKey = `words_${dateStr}`;
+                const dayWords = localStorage.getItem(dayKey);
+                result.push({
+                    date: dateStr,
+                    total_words: dayWords ? parseInt(dayWords, 10) : 0
+                });
+            }
+            current.setDate(current.getDate() + 1);
+        }
+        // Print daily totals for debugging
+        const totalWords = result.reduce((sum, day)=>sum + day.total_words, 0);
+        console.log(`Local word counts for week: ${totalWords} total words`);
+        return result;
+    } catch (e) {
+        console.error('Error getting local word counts by day:', e);
+        return [];
     }
 }
 // Generate empty weekly stats
@@ -72202,13 +72716,21 @@ function calculateProgressPercentage(completedItems, totalItems) {
 let currentContentSet = null;
 async function getCurrentContent() {
     // Import Supabase client to avoid circular dependencies
-    const { fetchContentSet } = await require("19d69dee685b5f02");
+    const { fetchContentSet, getCurrentUserId } = await require("19d69dee685b5f02");
     try {
+        // Get the current user ID for better logging
+        const userId = getCurrentUserId();
+        console.log('Fetching content for user ID:', userId);
         // Try to fetch from Supabase
         const content = await fetchContentSet();
         if (content) {
             // Update local cache for quick access
             currentContentSet = content;
+            // Log progress status for debugging
+            if (content.paragraphs && content.paragraphs.length > 0) {
+                const completedCount = content.paragraphs.filter((p)=>p.completed).length;
+                console.log(`User progress: ${completedCount}/${content.paragraphs.length} paragraphs completed`);
+            }
             return content;
         } else {
             console.error('Failed to fetch content from Supabase');
@@ -72295,18 +72817,33 @@ function getDefaultContent() {
 }
 async function completeParagraph(paragraphId) {
     // Import Supabase client to avoid circular dependencies
-    const { getCurrentUserId, updateContentProgress } = await require("19d69dee685b5f02");
+    const { getCurrentUserId, updateContentProgress, logWordCount } = await require("19d69dee685b5f02");
     // Get the current user ID
     const userId = getCurrentUserId();
     if (!userId) {
         console.error('User not authenticated, cannot update progress');
         throw new Error('User not authenticated');
     }
+    // Save to localStorage immediately for better reliability
+    try {
+        const localKey = `paragraph_${paragraphId}_completed`;
+        localStorage.setItem(localKey, 'true');
+        console.log(`Saved paragraph completion to localStorage: ${localKey}`);
+    } catch (e) {
+        console.error('Error saving to localStorage:', e);
+    }
     try {
         // Update progress in Supabase
         const success = await updateContentProgress(paragraphId, 'paragraph', true);
         if (!success) console.error('Failed to update paragraph completion in database');
-        else console.log('Successfully marked paragraph as completed in Supabase');
+        else {
+            console.log('Successfully marked paragraph as completed in Supabase');
+            // Use a fixed word count per paragraph to ensure consistency
+            // Instead of calculating based on actual text which can lead to double-counting
+            const FIXED_WORDS_PER_PARAGRAPH = 8;
+            await logWordCount(FIXED_WORDS_PER_PARAGRAPH);
+            console.log(`Logged fixed word count of ${FIXED_WORDS_PER_PARAGRAPH} words for completed paragraph`);
+        }
     } catch (error) {
         console.error('Error updating paragraph completion:', error);
     }
@@ -72323,18 +72860,32 @@ async function completeParagraph(paragraphId) {
 }
 async function completeWisdomSection(sectionId) {
     // Import Supabase client to avoid circular dependencies
-    const { getCurrentUserId, updateContentProgress } = await require("19d69dee685b5f02");
+    const { getCurrentUserId, updateContentProgress, logWordCount } = await require("19d69dee685b5f02");
     // Get the current user ID
     const userId = getCurrentUserId();
     if (!userId) {
         console.error('User not authenticated, cannot update progress');
         throw new Error('User not authenticated');
     }
+    // Save to localStorage immediately for better reliability
+    try {
+        const localKey = `wisdom_${sectionId}_completed`;
+        localStorage.setItem(localKey, 'true');
+        console.log(`Saved wisdom section completion to localStorage: ${localKey}`);
+    } catch (e) {
+        console.error('Error saving to localStorage:', e);
+    }
     try {
         // Update progress in Supabase
         const success = await updateContentProgress(sectionId, 'wisdom', true);
         if (!success) console.error('Failed to update wisdom section completion in database');
-        else console.log('Successfully marked wisdom section as completed in Supabase');
+        else {
+            console.log('Successfully marked wisdom section as completed in Supabase');
+            // Use a fixed word count per wisdom section
+            const FIXED_WORDS_PER_WISDOM = 10;
+            await logWordCount(FIXED_WORDS_PER_WISDOM);
+            console.log(`Logged fixed word count of ${FIXED_WORDS_PER_WISDOM} words for completed wisdom section`);
+        }
     } catch (error) {
         console.error('Error updating wisdom section completion:', error);
     }
@@ -72508,6 +73059,6 @@ exports.default = withLoadingAnimation;
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["hACtd","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:57435")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["g0ov7","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:5000")
 
 //# sourceMappingURL=retype_pro.6efbc4f8.js.map

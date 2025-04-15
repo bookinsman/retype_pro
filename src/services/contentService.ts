@@ -67,15 +67,26 @@ let currentContentSet: ContentSet | null = null;
 // Get the current content set
 export async function getCurrentContent(): Promise<ContentSet> {
   // Import Supabase client to avoid circular dependencies
-  const { fetchContentSet } = await import('./supabaseClient');
+  const { fetchContentSet, getCurrentUserId } = await import('./supabaseClient');
   
   try {
+    // Get the current user ID for better logging
+    const userId = getCurrentUserId();
+    console.log('Fetching content for user ID:', userId);
+    
     // Try to fetch from Supabase
     const content = await fetchContentSet();
     
     if (content) {
       // Update local cache for quick access
       currentContentSet = content;
+      
+      // Log progress status for debugging
+      if (content.paragraphs && content.paragraphs.length > 0) {
+        const completedCount = content.paragraphs.filter(p => p.completed).length;
+        console.log(`User progress: ${completedCount}/${content.paragraphs.length} paragraphs completed`);
+      }
+      
       return content;
     } else {
       console.error('Failed to fetch content from Supabase');
@@ -167,13 +178,22 @@ function getDefaultContent(): ContentSet {
 // Mark paragraph as completed
 export async function completeParagraph(paragraphId: string): Promise<ContentSet> {
   // Import Supabase client to avoid circular dependencies
-  const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
+  const { getCurrentUserId, updateContentProgress, logWordCount } = await import('./supabaseClient');
   
   // Get the current user ID
   const userId = getCurrentUserId();
   if (!userId) {
     console.error('User not authenticated, cannot update progress');
     throw new Error('User not authenticated');
+  }
+  
+  // Save to localStorage immediately for better reliability
+  try {
+    const localKey = `paragraph_${paragraphId}_completed`;
+    localStorage.setItem(localKey, 'true');
+    console.log(`Saved paragraph completion to localStorage: ${localKey}`);
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
   }
   
   try {
@@ -184,6 +204,12 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
       console.error('Failed to update paragraph completion in database');
     } else {
       console.log('Successfully marked paragraph as completed in Supabase');
+      
+      // Use a fixed word count per paragraph to ensure consistency
+      // Instead of calculating based on actual text which can lead to double-counting
+      const FIXED_WORDS_PER_PARAGRAPH = 8;
+      await logWordCount(FIXED_WORDS_PER_PARAGRAPH);
+      console.log(`Logged fixed word count of ${FIXED_WORDS_PER_PARAGRAPH} words for completed paragraph`);
     }
   } catch (error) {
     console.error('Error updating paragraph completion:', error);
@@ -206,13 +232,22 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
 // Mark wisdom section as completed
 export async function completeWisdomSection(sectionId: string): Promise<ContentSet> {
   // Import Supabase client to avoid circular dependencies
-  const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
+  const { getCurrentUserId, updateContentProgress, logWordCount } = await import('./supabaseClient');
   
   // Get the current user ID
   const userId = getCurrentUserId();
   if (!userId) {
     console.error('User not authenticated, cannot update progress');
     throw new Error('User not authenticated');
+  }
+  
+  // Save to localStorage immediately for better reliability
+  try {
+    const localKey = `wisdom_${sectionId}_completed`;
+    localStorage.setItem(localKey, 'true');
+    console.log(`Saved wisdom section completion to localStorage: ${localKey}`);
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
   }
   
   try {
@@ -223,6 +258,11 @@ export async function completeWisdomSection(sectionId: string): Promise<ContentS
       console.error('Failed to update wisdom section completion in database');
     } else {
       console.log('Successfully marked wisdom section as completed in Supabase');
+      
+      // Use a fixed word count per wisdom section
+      const FIXED_WORDS_PER_WISDOM = 10;
+      await logWordCount(FIXED_WORDS_PER_WISDOM);
+      console.log(`Logged fixed word count of ${FIXED_WORDS_PER_WISDOM} words for completed wisdom section`);
     }
   } catch (error) {
     console.error('Error updating wisdom section completion:', error);

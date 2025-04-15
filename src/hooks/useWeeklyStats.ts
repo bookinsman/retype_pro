@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { WeeklyStats, getWeeklyStats, dayNames } from '../services/weeklyStatsService';
 
 interface UseWeeklyStatsReturn {
@@ -25,6 +25,16 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     start: null,
     end: null
   });
+  
+  // Add a cache timestamp to track when data was last fetched
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const CACHE_TIMEOUT = 2000; // 2 seconds in milliseconds
+  
+  // Use a ref to track if a fetch is in progress to prevent duplicate fetches
+  const isFetchingRef = useRef(false);
+  
+  // Use a ref for the last requested weekOffset to ensure we're getting the right data
+  const lastRequestedOffsetRef = useRef(weekOffset);
 
   // Get current month and year for display
   const getFormattedDate = useCallback(() => {
@@ -79,31 +89,111 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
   }, []);
 
   // Fetch weekly stats data
-  const fetchWeeklyStats = useCallback(async () => {
+  const fetchWeeklyStats = useCallback(async (forceRefresh = false) => {
+    // Skip if a fetch is already in progress
+    if (isFetchingRef.current) {
+      console.log('Weekly stats fetch already in progress, skipping');
+      return;
+    }
+    
+    // Skip fetching if we have recent data and not forcing refresh
+    const now = Date.now();
+    if (!forceRefresh && weeklyStats && (now - lastFetchTime < CACHE_TIMEOUT)) {
+      console.log('Using cached weekly stats data (fetched within last 2 seconds)');
+      return;
+    }
+    
+    // Mark that we're starting a fetch
+    isFetchingRef.current = true;
     setLoading(true);
+    
+    // Save the current week offset for this fetch
+    lastRequestedOffsetRef.current = weekOffset;
+    
     try {
-      const stats = await getWeeklyStats(weekOffset);
-      setWeeklyStats(stats);
+      console.log(`Fetching weekly stats with offset: ${weekOffset}${forceRefresh ? ' (forced refresh)' : ''}`);
       
-      // Set week start and end dates
-      if (stats.days.length > 0) {
-        const startDate = new Date(stats.days[0].date);
-        const endDate = new Date(stats.days[stats.days.length - 1].date);
-        setWeekDates({ start: startDate, end: endDate });
+      // Clear localStorage cache for today to force fetching fresh data
+      if (forceRefresh) {
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const cacheKey = `stats_cache_${weekOffset}_${today}`;
+          localStorage.removeItem(cacheKey);
+          console.log('Cleared cache for weekly stats to force refresh');
+        } catch (e) {
+          console.error('Error clearing cache:', e);
+        }
       }
       
-      setError(null);
+      const stats = await getWeeklyStats(weekOffset);
+      
+      // Only update state if the week offset hasn't changed during the fetch
+      // This prevents race conditions where an older fetch overwrites newer data
+      if (lastRequestedOffsetRef.current === weekOffset) {
+        // Log the stats for debugging
+        const totalWords = stats.days.reduce((sum, day) => sum + (day.words || 0), 0);
+        console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${stats.mostProductiveDayIndex}`);
+        
+        setWeeklyStats(stats);
+        setLastFetchTime(now);
+        
+        // Set week start and end dates
+        if (stats.days.length > 0) {
+          const startDate = new Date(stats.days[0].date);
+          const endDate = new Date(stats.days[stats.days.length - 1].date);
+          setWeekDates({ start: startDate, end: endDate });
+          console.log(`Week date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+        }
+        
+        setError(null);
+      } else {
+        console.log('Week offset changed during fetch, discarding results');
+      }
     } catch (err) {
+      console.error('Error fetching weekly stats:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch weekly stats'));
     } finally {
       setLoading(false);
+      
+      // Mark fetch as complete after a small delay to prevent immediate duplicate fetches
+      setTimeout(() => {
+        isFetchingRef.current = false;
+      }, 300);
     }
-  }, [weekOffset]);
+  }, [weekOffset, weeklyStats, lastFetchTime]);
 
   // Function to manually refresh stats
   const refreshStats = useCallback(() => {
-    fetchWeeklyStats();
-  }, [fetchWeeklyStats]);
+    console.log('Manual refresh of weekly stats requested');
+    
+    // Force refresh of localStorage data first
+    try {
+      const userId = localStorage.getItem('current_user_id');
+      if (userId) {
+        // Clear any localStorage cache for the current week to force fresh data
+        const today = new Date().toISOString().split('T')[0];
+        const cacheKey = `stats_cache_${weekOffset}_${today}`;
+        localStorage.removeItem(cacheKey);
+        
+        // Get today's date in ISO format (YYYY-MM-DD)
+        const todayKey = `words_${today}`;
+        
+        // Re-read today's word count from localStorage
+        const todayWords = localStorage.getItem(todayKey);
+        console.log(`Today's words before refresh: ${todayWords || '0'}`);
+        
+        // Clear isFetching flag to ensure we fetch new data
+        isFetchingRef.current = false;
+      }
+    } catch (e) {
+      console.error('Error clearing stats cache:', e);
+    }
+    
+    // Force refresh with a slight delay to allow any pending state updates
+    setTimeout(() => {
+      fetchWeeklyStats(true); // Force refresh 
+    }, 300);
+  }, [fetchWeeklyStats, weekOffset]);
 
   // Fetch stats on mount and when weekOffset changes
   useEffect(() => {
@@ -111,6 +201,7 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     
     const fetchData = async () => {
       if (!isMounted) return;
+      console.log('Initial fetch of weekly stats');
       await fetchWeeklyStats();
     };
 

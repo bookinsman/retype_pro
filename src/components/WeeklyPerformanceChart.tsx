@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
 import { useWeeklyStats } from '../hooks/useWeeklyStats';
@@ -56,6 +56,12 @@ const chartOptions = {
 };
 
 export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerformanceChartProps) {
+  // Add local loading state for smoother transitions
+  const [isLocalLoading, setIsLocalLoading] = useState(true);
+  
+  // Add a tracking state for successful stats refresh
+  const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
+  
   const { 
     weeklyStats, 
     loading, 
@@ -69,16 +75,58 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
     refreshStats 
   } = useWeeklyStats();
   
-  // Refresh stats when refreshKey changes
-  React.useEffect(() => {
-    if (refreshKey > 0) {
+  // Add logging for when the component refreshes due to refreshKey changes
+  useEffect(() => {
+    console.log('WeeklyPerformanceChart: refreshKey changed to', refreshKey, 'refreshing stats');
+    
+    // Set local loading to true for a smoother transition
+    setIsLocalLoading(true);
+    
+    // Force a stats refresh every time the key changes
+    const now = Date.now();
+    setLastRefreshTime(now);
+    
+    // Add a small delay to ensure the refresh is processed
+    const refreshTimer = setTimeout(() => {
+      console.log('Executing refreshStats() from refreshKey effect');
       refreshStats();
-    }
+    }, 200);
+    
+    return () => clearTimeout(refreshTimer);
   }, [refreshKey, refreshStats]);
+  
+  // Manage local loading state
+  useEffect(() => {
+    if (!loading && weeklyStats) {
+      // Delay the loading transition slightly to avoid flickering
+      const loadingTimer = setTimeout(() => {
+        setIsLocalLoading(false);
+      }, 200);
+      
+      return () => clearTimeout(loadingTimer);
+    }
+  }, [loading, weeklyStats]);
+  
+  // Log when weekly stats are updated
+  useEffect(() => {
+    if (weeklyStats) {
+      const totalWords = weeklyStats.days.reduce((sum, day) => sum + day.words, 0);
+      console.log('WeeklyPerformanceChart: weekly stats updated', {
+        totalWords,
+        mostProductiveDay: weeklyStats.mostProductiveDayIndex,
+        dayCount: weeklyStats.days.length,
+        lastRefreshTime: new Date(lastRefreshTime).toISOString(),
+      });
+    }
+  }, [weeklyStats, lastRefreshTime]);
 
   // If still loading or there's an error, show placeholder
-  if (loading) {
-    return <div className="h-48 bg-gray-100 animate-pulse rounded-lg"></div>;
+  if (loading || isLocalLoading) {
+    return (
+      <div className="h-48 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
+        <div className="text-gray-400">Duomenys kraunami...</div>
+      </div>
+    );
   }
 
   if (error || !weeklyStats) {
@@ -122,6 +170,7 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
         <button 
           className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
           onClick={previousWeek}
+          disabled={isLocalLoading}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -134,6 +183,7 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
             <button 
               onClick={currentWeek}
               className="ml-2 text-xs text-blue-500 hover:text-blue-700 font-lora"
+              disabled={isLocalLoading}
             >
               (Dabartinė savaitė)
             </button>
@@ -142,7 +192,7 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
         <button 
           className={`p-2 rounded-full ${weekOffset < 0 ? 'bg-gray-100 hover:bg-gray-200' : 'bg-gray-100 opacity-50 cursor-not-allowed'} transition-colors`}
           onClick={nextWeek}
-          disabled={weekOffset >= 0}
+          disabled={weekOffset >= 0 || isLocalLoading}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />

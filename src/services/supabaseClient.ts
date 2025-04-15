@@ -29,145 +29,149 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// ========================
-// ACCESS CODE FUNCTIONS
-// ========================
-export async function validateAccessCode(enteredCode: string): Promise<{
-  success: boolean;
-  userId?: string;
-  error?: string;
-  codeType?: string;
-}> {
-  try {
-    // Check if the code exists and is not used
-    const { data: codeEntry, error } = await supabase
-      .from('access_codes')
-      .select('*')
-      .eq('code', enteredCode)
-      .eq('is_used', false)
-      .single();
-
-    if (error || !codeEntry) {
-      return { success: false, error: 'Neteisingas arba jau panaudotas kodas.' };
+/**
+ * Gets the current user ID from localStorage, or creates a new one if not found
+ * @returns The current user ID
+ */
+export function getUserId(): string {
+  // Check for a locally stored user ID
+  const storedId = localStorage.getItem('user_id') || localStorage.getItem('userId');
+  
+  if (storedId) {
+    // Check if we need to migrate from old "LOCAL-" format to proper UUID
+    if (storedId.startsWith('LOCAL-') ||
+        storedId.startsWith('DEMO') ||
+        storedId.length < 20) {
+      console.log('Detected old format user ID, migrating to UUID format');
+      
+      // Generate a new proper UUID
+      const newUserId = crypto.randomUUID();
+      
+      // Store this new ID in both formats for backward compatibility
+      localStorage.setItem('user_id', newUserId);
+      localStorage.setItem('userId', newUserId);
+      
+      return newUserId;
     }
+    
+    return storedId;
+  }
 
-    // Generate a new user ID
+  // No user ID exists, we need to create one
+  try {
     const userId = crypto.randomUUID();
     
-    // Mark the code as used
+    console.log('Creating new user with ID:', userId);
+    
+    // Store user ID in both formats for backward compatibility
+    localStorage.setItem('user_id', userId);
+    localStorage.setItem('userId', userId);
+    
+    // Initialize new user in the background
+    ensureUserInitialized(userId);
+    
+    return userId;
+  } catch (e) {
+    console.error('Error creating user ID:', e);
+    
+    // Fallback to a simple random ID in case of any issues
+    const fallbackId = 'USER-' + Math.random().toString(36).substring(2, 10);
+    
+    localStorage.setItem('user_id', fallbackId);
+    localStorage.setItem('userId', fallbackId);
+    
+    return fallbackId;
+  }
+}
+
+/**
+ * Alias for getUserId to maintain compatibility with imports in other files
+ * @returns The current user ID
+ */
+export function getCurrentUserId(): string {
+  return getUserId();
+}
+
+/**
+ * Checks if there is currently an authenticated user
+ * @returns True if a user ID exists, false otherwise
+ */
+export function isAuthenticated(): boolean {
+  const userId = getUserId();
+  return !!userId && userId.length > 0;
+}
+
+/**
+ * Validates an access code and assigns it to the current user if valid
+ * @param code The access code to validate
+ * @returns Object with success flag and message
+ */
+export async function validateAccessCode(code: string): Promise<{ success: boolean; message?: string; }> {
+  // Basic validation
+  if (!code || typeof code !== 'string') {
+    console.log('Invalid access code format');
+    return { success: false, message: 'Neteisingas prieigos kodo formatas.' };
+  }
+  
+  if (code.length < 3 || code.length > 20) {
+    console.log('Access code must be between 3 and 20 characters');
+    return { success: false, message: 'Prieigos kodas turi būti nuo 3 iki 20 simbolių.' };
+  }
+  
+  try {
+    // First check if the code already exists and if it's already used
+    const { data: accessCode, error: fetchError } = await supabase
+      .from('access_codes')
+      .select('*')
+      .eq('code', code)
+      .single();
+    
+    if (fetchError) {
+      console.log('Error checking access code:', fetchError.message);
+      return { success: false, message: 'Neteisingas prieigos kodas.' };
+    }
+    
+    if (!accessCode) {
+      console.log('Access code not found in database');
+      return { success: false, message: 'Neteisingas prieigos kodas.' };
+    }
+    
+    if (accessCode.is_used) {
+      console.log('Access code already used');
+      return { success: false, message: 'Šis prieigos kodas jau panaudotas.' };
+    }
+    
+    // Generate a new user ID for this access code
+    const userId = crypto.randomUUID();
+    
+    // Mark the access code as used
     const { error: updateError } = await supabase
       .from('access_codes')
       .update({
         is_used: true,
-        user_id: userId,
-        used_at: new Date().toISOString()
+        used_at: new Date().toISOString(),
+        user_id: userId
       })
-      .eq('code', enteredCode);
-
+      .eq('code', code);
+    
     if (updateError) {
-      console.error('Error updating access code:', updateError);
-      return { success: false, error: 'Klaida aktyvuojant kodą. Bandykite vėliau.' };
+      console.log('Error updating access code:', updateError.message);
+      return { success: false, message: 'Klaida aktyvuojant prieigos kodą.' };
     }
-
-    // Store the user ID and code type in localStorage
+    
+    // Store user info in localStorage
     localStorage.setItem('user_id', userId);
-    localStorage.setItem('access_type', codeEntry.code_type);
-
-    return { 
-      success: true, 
-      userId, 
-      codeType: codeEntry.code_type 
-    };
-  } catch (error) {
-    console.error('Access code validation error:', error);
-    return { success: false, error: 'Serverio klaida. Bandykite vėliau.' };
-  }
-}
-
-// Check if user is authenticated
-export function isAuthenticated(): boolean {
-  return !!getCurrentUserId();
-}
-
-// Get the current user ID
-export function getCurrentUserId(): string | null {
-  // Try to get existing user ID
-  const userId = localStorage.getItem('user_id');
-  
-  // If no user ID exists, create a demo user with a proper ID in the DB
-  if (!userId) {
-    try {
-      const demoUserId = crypto.randomUUID();
-      const demoCode = 'DEMO' + Math.random().toString(36).substring(2, 6).toUpperCase();
-      
-      console.log('Creating demo user with ID:', demoUserId, 'and code:', demoCode);
-      
-      // Create a demo access code (will be async but we won't wait)
-      createDemoAccessCode(demoUserId, demoCode).catch(e => 
-        console.error('Failed to create demo access code:', e)
-      );
-      
-      // Store user ID in localStorage
-      localStorage.setItem('user_id', demoUserId);
-      localStorage.setItem('access_type', 'demo');
-      
-      return demoUserId;
-    } catch (e) {
-      console.error('Error creating demo user:', e);
-      // Create a local ID without DB entry as last resort
-      const fallbackId = 'LOCAL-' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('user_id', fallbackId);
-      localStorage.setItem('access_type', 'local');
-      return fallbackId;
-    }
-  }
-  
-  return userId;
-}
-
-// Create a demo access code in the database
-async function createDemoAccessCode(userId: string, demoCode: string): Promise<void> {
-  try {
-    // Check if the access_codes table exists
-    const { error: tableCheckError } = await supabase
-      .from('access_codes')
-      .select('code')
-      .limit(1);
-      
-    if (tableCheckError) {
-      console.error('access_codes table might not exist:', tableCheckError.message);
-      return;
-    }
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('code_type', accessCode.code_type);
     
-    // First check if this user already has an access code
-    const { data: existingCodes } = await supabase
-      .from('access_codes')
-      .select('code')
-      .eq('user_id', userId);
-      
-    if (existingCodes && existingCodes.length > 0) {
-      console.log('User already has access code(s):', existingCodes);
-      return;
-    }
+    // Initialize the user in the database
+    await ensureUserInitialized(userId);
     
-    // Create a new access code entry
-    const { error } = await supabase
-      .from('access_codes')
-      .insert({
-        code: demoCode,
-        code_type: 'demo',
-        user_id: userId,
-        is_used: true,
-        used_at: new Date().toISOString()
-      });
-      
-    if (error) {
-      console.error('Error creating demo access code:', error.message);
-    } else {
-      console.log('Successfully created demo access code:', demoCode);
-    }
+    console.log('Successfully validated access code');
+    return { success: true };
   } catch (e) {
-    console.error('Exception in createDemoAccessCode:', e);
+    console.error('Exception in validateAccessCode:', e);
+    return { success: false, message: 'Įvyko klaida tikrinant prieigos kodą.' };
   }
 }
 
@@ -198,11 +202,11 @@ export async function fetchContentSet(): Promise<ContentSet | null> {
       console.error('Failed to test Supabase connection:', connectionTestError);
     }
     
-  // Get active content set
+    // Get active content set
     console.log('Requesting content_sets from Supabase');
-  const { data: contentSetData, error: contentSetError } = await supabase
-    .from('content_sets')
-    .select('*')
+    const { data: contentSetData, error: contentSetError } = await supabase
+      .from('content_sets')
+      .select('*')
       .limit(1);
     
     if (contentSetError) {
@@ -220,116 +224,130 @@ export async function fetchContentSet(): Promise<ContentSet | null> {
     
     if (!contentSet || !contentSet.id) {
       console.error('Content set has no ID, data received:', contentSetData);
-    return null;
-  }
+      return null;
+    }
     
     console.log('Content set fetched successfully:', contentSet.id);
   
-  // Get paragraphs for this content set
+    // Get paragraphs for this content set
     console.log('Requesting paragraphs for content set:', contentSet.id);
-  const { data: paragraphsData, error: paragraphsError } = await supabase
+    const { data: paragraphsData, error: paragraphsError } = await supabase
       .from('paragraphs')
-    .select('*')
+      .select('*')
       .eq('content_set_id', contentSet.id)
       .order('order_index', { ascending: true });
   
-  if (paragraphsError) {
+    if (paragraphsError) {
       console.error('Error fetching paragraphs:', paragraphsError.message, paragraphsError.details, paragraphsError.hint);
       return null;
     }
     
     if (!paragraphsData || paragraphsData.length === 0) {
       console.error('No paragraphs found for content set:', contentSet.id);
-    return null;
-  }
+      return null;
+    }
     
     console.log('Paragraphs fetched successfully, count:', paragraphsData.length);
   
-  // Get wisdom sections for this content set
+    // Get wisdom sections for this content set
     console.log('Requesting wisdom sections for content set:', contentSet.id);
-  const { data: wisdomData, error: wisdomError } = await supabase
+    const { data: wisdomData, error: wisdomError } = await supabase
       .from('wisdom_sections')
-    .select('*')
+      .select('*')
       .eq('content_set_id', contentSet.id);
   
-  if (wisdomError) {
+    if (wisdomError) {
       console.error('Error fetching wisdom sections:', wisdomError.message, wisdomError.details, wisdomError.hint);
       return null;
     }
     
     if (!wisdomData) {
       console.error('No wisdom sections found for content set:', contentSet.id);
-    return null;
-  }
+      return null;
+    }
   
     console.log('Wisdom sections fetched successfully, count:', wisdomData.length);
     
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     console.log('Current user ID for progress tracking:', userId);
-  let paragraphProgress: Record<string, boolean> = {};
-  let wisdomProgress: Record<string, boolean> = {};
-  
+    let paragraphProgress: Record<string, boolean> = {};
+    let wisdomProgress: Record<string, boolean> = {};
+    
     // If user is authenticated, get their progress
     if (userId) {
       console.log('Fetching user progress for user:', userId);
       const { data: progressData, error: progressError } = await supabase
-      .from('user_progress')
-      .select('*')
+        .from('user_progress')
+        .select('*')
         .eq('user_id', userId);
       
       if (progressError) {
         console.warn('Error fetching user progress:', progressError.message);
       }
     
-    if (progressData) {
+      if (progressData) {
         console.log('User progress fetched successfully, count:', progressData.length);
-      progressData.forEach((item: {
-        content_id: string;
-        content_type: string;
-        completed: boolean;
-      }) => {
-        if (item.content_type === 'paragraph') {
-          paragraphProgress[item.content_id] = item.completed;
-        } else if (item.content_type === 'wisdom') {
-          wisdomProgress[item.content_id] = item.completed;
-        }
-      });
+        progressData.forEach((item: {
+          content_id: string;
+          content_type: string;
+          completed: boolean;
+        }) => {
+          if (item.content_type === 'paragraph') {
+            paragraphProgress[item.content_id] = item.completed;
+          } else if (item.content_type === 'wisdom') {
+            wisdomProgress[item.content_id] = item.completed;
+          }
+        });
+      }
     }
-  }
   
-  // Format paragraphs with completion status
-  const paragraphs: Paragraph[] = paragraphsData.map((p: {
-    id: string;
-    content: string;
+    // Format paragraphs with completion status from both localStorage and remote data
+    const paragraphs: Paragraph[] = paragraphsData.map((p: {
+      id: string;
+      content: string;
       order_index: number;
-  }) => ({
-    id: p.id,
-    content: p.content,
-      order: p.order_index,
-    completed: paragraphProgress[p.id] || false
-  }));
-  
-  // Format wisdom sections with completion status
-  const wisdomSections: WisdomSection[] = wisdomData.map((w: {
-    id: string;
+    }) => {
+      // Check localStorage first for more reliable completion status
+      const localStorageKey = `paragraph_${p.id}_completed`;
+      const isCompletedLocally = localStorage.getItem(localStorageKey) === 'true';
+      
+      return {
+        id: p.id,
+        content: p.content,
+        order: p.order_index,
+        // Prioritize localStorage over remote data
+        completed: isCompletedLocally || paragraphProgress[p.id] || false
+      };
+    });
+    
+    // Format wisdom sections with completion status
+    const wisdomSections: WisdomSection[] = wisdomData.map((w: {
+      id: string;
       type: "quote";
-    title: string;
-    content: string;
-  }) => ({
-    id: w.id,
-    type: w.type,
-    title: w.title,
-    content: w.content,
-    completed: wisdomProgress[w.id] || false
-  }));
-  
+      title: string;
+      content: string;
+    }) => {
+      // Check localStorage first for more reliable completion status
+      const localStorageKey = `wisdom_${w.id}_completed`;
+      const isCompletedLocally = localStorage.getItem(localStorageKey) === 'true';
+      
+      return {
+        id: w.id,
+        type: w.type,
+        title: w.title,
+        content: w.content,
+        // Prioritize localStorage over remote data
+        completed: isCompletedLocally || wisdomProgress[w.id] || false
+      };
+    });
+    
     const result = {
       id: contentSet.id,
       title: contentSet.title,
       subtitle: contentSet.subtitle,
-    paragraphs,
-    wisdomSections
-  };
+      paragraphs,
+      wisdomSections
+    };
     
     console.log('Content set assembled successfully with', paragraphs.length, 'paragraphs and', wisdomSections.length, 'wisdom sections');
     return result;
@@ -387,7 +405,7 @@ export async function updateContentProgress(
   contentType: 'paragraph' | 'wisdom',
   completed: boolean
 ): Promise<boolean> {
-  const userId = getCurrentUserId();
+  const userId = getUserId();
   if (!userId) {
     console.error('User not authenticated');
     return false;
@@ -409,10 +427,10 @@ export async function updateContentProgress(
     // Check if progress record exists - use a simpler query that's less likely to fail
     try {
       const { data: existingProgress, error: lookupError } = await supabase
-    .from('user_progress')
+        .from('user_progress')
         .select('id, user_id, content_id, content_type, completed')
         .eq('user_id', userId)
-    .eq('content_id', contentId)
+        .eq('content_id', contentId)
         .eq('content_type', contentType);
       
       if (lookupError) {
@@ -429,12 +447,12 @@ export async function updateContentProgress(
         console.log('Updating existing progress record with ID:', progressRecord.id);
         
         try {
-    const { error } = await supabase
-      .from('user_progress')
-      .update({ 
-        completed,
-        completed_at: completed ? new Date().toISOString() : null
-      })
+          const { error } = await supabase
+            .from('user_progress')
+            .update({ 
+              completed,
+              completed_at: completed ? new Date().toISOString() : null
+            })
             .eq('id', progressRecord.id);
             
           if (error) {
@@ -446,19 +464,19 @@ export async function updateContentProgress(
         } catch (updateError) {
           console.error('Exception during progress update:', updateError);
         }
-  } else {
+      } else {
         // Create new record - but only if we know the table exists
         console.log('Creating new progress record');
         
         try {
           const { data: insertData, error } = await supabase
-      .from('user_progress')
-      .insert({
+            .from('user_progress')
+            .insert({
               user_id: userId,
-        content_id: contentId,
-        content_type: contentType,
-        completed,
-        completed_at: completed ? new Date().toISOString() : null
+              content_id: contentId,
+              content_type: contentType,
+              completed,
+              completed_at: completed ? new Date().toISOString() : null
             })
             .select();
             
@@ -527,41 +545,64 @@ function saveProgressLocally(
 // Log completed words
 export async function logWordCount(wordCount: number): Promise<boolean> {
   try {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
       console.log('No user ID found, cannot log word count');
       return false;
     }
     
-    // First save to localStorage as reliable backup
-    saveStatsLocally(userId, wordCount);
+    // First save to localStorage as reliable backup - don't wait for Supabase
+    try {
+      saveStatsLocally(userId, wordCount);
+      console.log(`Logged ${wordCount} words locally for user ${userId}`);
+    } catch (localError) {
+      console.error('Error saving to localStorage:', localError);
+    }
     
-    console.log(`Logging ${wordCount} words for user ${userId}`);
+    // Skip Supabase for local or demo users
+    if (userId.startsWith('LOCAL-') || userId.startsWith('DEMO')) {
+      console.log(`Using local-only mode for user ${userId}, skipping Supabase updates`);
+      return true;
+    }
     
-    // Insert into word_logs table (per SUPABASE.md schema)
-    const { data, error } = await supabase
-      .from('word_logs')
-      .insert({
+    // Try to log to Supabase, but don't block if it fails
+    try {
+      // Simple word log entry
+      const wordLogEntry = {
         user_id: userId,
         word_count: wordCount
-      });
+      };
       
-    if (error) {
-      console.error('Error logging word count to word_logs table:', error.message, error.details);
-      console.log('Falling back to local storage for word count');
-      return true; // Return success since we saved locally
+      // Insert into word_logs table
+      const { error } = await supabase
+        .from('word_logs')
+        .insert(wordLogEntry);
+        
+      if (error) {
+        console.error('Error logging to word_logs table:', error.message);
+      } else {
+        console.log('Successfully logged to word_logs table');
+      }
+    } catch (loggingError) {
+      console.error('Exception logging to word_logs:', loggingError);
     }
     
-    console.log('Successfully logged word count to word_logs table');
-    
-    // Also attempt to update the existing user_stats and user_daily_stats tables for backward compatibility
+    // Update the legacy stats tables in the background
     try {
-      await updateUserStats({ words: wordCount });
+      updateUserStats({ words: wordCount })
+        .then(success => {
+          if (success) {
+            console.log('Legacy stats updated successfully');
+          }
+        })
+        .catch(e => {
+          console.error('Error updating legacy stats:', e);
+        });
     } catch (updateError) {
-      console.log('Error updating legacy stats tables:', updateError);
+      console.error('Error starting legacy stats update:', updateError);
     }
     
-    return true;
+    return true; // Return success since we saved to localStorage
   } catch (e) {
     console.error('Exception in logWordCount:', e);
     return true; // Return success to allow app to continue
@@ -571,7 +612,7 @@ export async function logWordCount(wordCount: number): Promise<boolean> {
 // Get today's word count
 export async function getTodayWordCount(): Promise<number> {
   try {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
       console.log('No user ID found, returning 0 word count');
       return 0;
@@ -635,7 +676,7 @@ export async function getTodayWordCount(): Promise<number> {
 
 // Get weekly word count
 export async function getWeeklyWordCount(): Promise<number> {
-  const userId = getCurrentUserId();
+  const userId = getUserId();
   if (!userId) {
     console.error('User not authenticated');
     return 0;
@@ -662,7 +703,7 @@ export async function getWeeklyWordCount(): Promise<number> {
 // Get total word count (all time)
 export async function getTotalWordCount(): Promise<number> {
   try {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
       console.error('User not authenticated');
       return 0;
@@ -743,7 +784,7 @@ async function fetchWeeklyStats(
   startDate: Date,
   endDate: Date
 ): Promise<{ date: string; count: number }[]> {
-  const userId = getCurrentUserId();
+  const userId = getUserId();
   if (!userId) {
     console.error('User not authenticated');
     return [];
@@ -797,98 +838,140 @@ export async function updateUserStats(
   const wordCount = statsUpdate.words || 0;
 
   try {
-    const userId = getCurrentUserId();
+    const userId = getUserId();
     if (!userId) {
       console.log('No user ID found, cannot update stats');
-    return false;
-  }
+      return false;
+    }
     
-    // Always save to local storage as reliable backup
-    saveStatsLocally(userId, wordCount);
+    // Always save to local storage immediately for reliable backup
+    try {
+      saveStatsLocally(userId, wordCount);
+      console.log(`Stats saved locally successfully for user: ${userId}`);
+    } catch (localSaveError) {
+      console.error('Failed to save stats locally:', localSaveError);
+    }
+    
+    // Skip Supabase operations if user ID starts with 'LOCAL-'
+    if (userId.startsWith('LOCAL-')) {
+      console.log('Using local-only mode for stats, skipping Supabase updates');
+      return true;
+    }
+    
+    // For demo users, also skip Supabase for better performance
+    if (userId.startsWith('DEMO')) {
+      console.log('Demo user detected, using localStorage only for better performance');
+      return true;
+    }
   
-  const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Log the update attempt for debugging
+    console.log(`Updating stats for user ${userId}: +${wordCount} words, date: ${today}`);
   
     // Try to update daily stats
     try {
-      // Find existing daily stats
+      // Find existing daily stats - use simpler query
       const { data: existingDailyStats, error: fetchError } = await supabase
-    .from('user_daily_stats')
-    .select('*')
+        .from('user_daily_stats')
+        .select('id, total_words')
         .eq('user_id', userId)
-    .eq('date', today)
-    .single();
+        .eq('date', today)
+        .maybeSingle();
   
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 means no rows found, which is fine - we'll create a new record
-        console.log('No existing daily stats found, will create new entry');
-      }
-      
-  if (existingDailyStats) {
-        // Update existing record - use match criteria instead of ID
-    const { error } = await supabase
-      .from('user_daily_stats')
-      .update({
-            total_words: (existingDailyStats.total_words || 0) + wordCount
-      })
-          .eq('user_id', userId)
-          .eq('date', today);
-    
-    if (error) {
-          console.log('Error updating daily stats, trying insert instead:', error);
-          // If update fails, try insert as fallback
+      if (fetchError) {
+        console.error('Error fetching daily stats:', fetchError.message, fetchError.details);
+        console.log('Using localStorage fallback for stats');
+      } else if (existingDailyStats) {
+        // Update existing record with minimal data
+        try {
+          console.log(`Updating daily stats record id: ${existingDailyStats.id}`);
+          console.log(`Current total words: ${existingDailyStats.total_words || 0}, adding ${wordCount}`);
+          
+          // Handle update with more error catching
+          try {
+            const updateResult = await supabase
+              .from('user_daily_stats')
+              .update({
+                total_words: (existingDailyStats.total_words || 0) + wordCount,
+                last_updated: new Date().toISOString()
+              })
+              .eq('id', existingDailyStats.id);
+            
+            const error = updateResult.error;
+            
+            if (error) {
+              // Use separate log statements to avoid errors in compilation
+              console.log('Error updating daily stats');
+              console.log('Error message:', error.message);
+              if (error.details) console.log('Error details:', error.details);
+            } else {
+              console.log(`Successfully updated daily stats for ${userId}`);
+            }
+          } catch (innerUpdateError) {
+            console.log('Exception in supabase update operation:', innerUpdateError);
+          }
+        } catch (updateError) {
+          console.log('Exception in update daily stats block:', updateError);
+        }
+      } else {
+        // Create new record
+        try {
           await createNewDailyStats(userId, today, wordCount);
-    }
-  } else {
-    // Create new record
-        await createNewDailyStats(userId, today, wordCount);
+        } catch (createError) {
+          console.log('Exception creating daily stats:', createError);
+        }
       }
     } catch (dailyStatsError) {
-      console.log('Error handling daily stats:', dailyStatsError);
-      // Continue with total stats even if daily stats fail
+      console.log('Error in daily stats handling:', dailyStatsError);
     }
     
     // Try to update total user stats
     try {
-      // Find existing user stats
+      // Find existing user stats - use simpler query
       const { data: existingUserStats, error: fetchError } = await supabase
-    .from('user_stats')
-    .select('*')
+        .from('user_stats')
+        .select('id, words')
         .eq('user_id', userId)
-    .single();
+        .maybeSingle();
   
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.log('No existing user stats found, will create new entry');
-      }
-      
-  if (existingUserStats) {
-    // Update existing record
-    const { error } = await supabase
-      .from('user_stats')
-      .update({
-            words: (existingUserStats.words || 0) + wordCount,
-            texts: (existingUserStats.texts || 0) + (statsUpdate.texts || 0),
-            time_spent_seconds: (existingUserStats.time_spent_seconds || 0) + (statsUpdate.timeSpentSeconds || 0),
-            speed: statsUpdate.speed || existingUserStats.speed || 0
-          })
-          .eq('user_id', userId);
-        
-        if (error) {
-          console.log('Error updating user stats, trying insert instead:', error);
-          // If update fails, try insert as fallback
-          await createNewUserStats(userId, statsUpdate);
+      if (fetchError) {
+        console.error('Error fetching user stats:', fetchError.message, fetchError.details);
+        console.log('Using localStorage fallback for total stats');
+      } else if (existingUserStats) {
+        // Update existing record with minimal data
+        try {
+          const { error } = await supabase
+            .from('user_stats')
+            .update({
+              words: (existingUserStats.words || 0) + wordCount,
+              last_updated: new Date().toISOString()
+            })
+            .eq('id', existingUserStats.id);
+          
+          if (error) {
+            console.error('Error updating user stats:', error.message, error.details);
+          } else {
+            console.log(`Successfully updated total stats for ${userId}`);
+          }
+        } catch (updateError) {
+          console.error('Exception updating user stats:', updateError);
         }
       } else {
         // Create new record
-        await createNewUserStats(userId, statsUpdate);
+        try {
+          await createNewUserStats(userId, statsUpdate);
+        } catch (createError) {
+          console.error('Exception creating user stats:', createError);
+        }
       }
     } catch (userStatsError) {
-      console.log('Error handling user stats:', userStatsError);
-      // Still return true to not block the user experience
+      console.error('Error handling user stats:', userStatsError);
     }
     
-    return true; // Return success to allow app to continue even with DB errors
+    return true; // Return success since we've saved to localStorage
   } catch (e) {
-    console.log('Exception in updateUserStats (continuing anyway):', e);
+    console.error('Exception in updateUserStats:', e);
     return true; // Return success to allow app to continue even with errors
   }
 }
@@ -896,19 +979,42 @@ export async function updateUserStats(
 // Helper function to create new daily stats
 async function createNewDailyStats(userId: string, date: string, words: number | undefined): Promise<void> {
   try {
+    console.log(`Creating new daily stats for ${userId} on ${date} with ${words || 0} words`);
+    
+    // Simplify data to reduce chances of validation errors
+    const newDailyStats = {
+      user_id: userId,
+      date: date,
+      total_words: words || 0
+    };
+    
+    console.log('Inserting daily stats record');
+    
     const { error } = await supabase
       .from('user_daily_stats')
-      .insert({
-        user_id: userId,
-        date: date,
-        total_words: words || 0 // Ensure words is never null
-      });
+      .insert(newDailyStats);
     
     if (error) {
-      console.log('Could not create daily stats:', error);
+      console.error('Could not create daily stats:', error.message, error.details);
+      
+      // Try upsert as an alternative if insert fails
+      if (error.code === '23505') { // Duplicate key error code
+        console.log('Attempting upsert as fallback for daily stats');
+        const { error: upsertError } = await supabase
+          .from('user_daily_stats')
+          .upsert(newDailyStats);
+          
+        if (upsertError) {
+          console.error('Upsert also failed for daily stats:', upsertError.message);
+        } else {
+          console.log('Successfully upserted daily stats');
+        }
+      }
+    } else {
+      console.log('Successfully created daily stats');
     }
   } catch (e) {
-    console.log('Exception creating daily stats:', e);
+    console.error('Exception creating daily stats:', e);
   }
 }
 
@@ -923,27 +1029,55 @@ async function createNewUserStats(
   }
 ): Promise<void> {
   try {
+    console.log(`Creating new user stats for ${userId} with ${stats.words || 0} words`);
+    
+    // Simplify data to reduce chances of validation errors
+    const newUserStats = {
+      user_id: userId,
+      words: stats.words || 0
+    };
+    
+    console.log('Inserting user stats record');
+    
     const { error } = await supabase
       .from('user_stats')
-      .insert({
-        user_id: userId,
-        words: stats.words || 0, // Ensure words is never null
-        texts: stats.texts || 0,
-        time_spent_seconds: stats.timeSpentSeconds || 0,
-        speed: stats.speed || 0
-      });
+      .insert(newUserStats);
     
     if (error) {
-      console.log('Could not create user stats:', error);
+      console.error('Could not create user stats:', error.message, error.details);
+      
+      // Try upsert as an alternative if insert fails
+      if (error.code === '23505') { // Duplicate key error code
+        console.log('Attempting upsert as fallback for user stats');
+        const { error: upsertError } = await supabase
+          .from('user_stats')
+          .upsert(newUserStats);
+          
+        if (upsertError) {
+          console.error('Upsert also failed for user stats:', upsertError.message);
+        } else {
+          console.log('Successfully upserted user stats');
+        }
+      }
+    } else {
+      console.log('Successfully created user stats');
     }
   } catch (e) {
-    console.log('Exception creating user stats:', e);
+    console.error('Exception creating user stats:', e);
   }
 }
 
 // Save stats to localStorage
 function saveStatsLocally(userId: string, wordCount: number): void {
   try {
+    if (wordCount <= 0) {
+      console.log('Skipping local stats update for zero or negative word count');
+      return;
+    }
+    
+    // Log the word count being added
+    console.log(`saveStatsLocally: Adding ${wordCount} words for user ${userId}`);
+    
     const statsKey = `${userId}_word_stats`;
     const statsJson = localStorage.getItem(statsKey);
     let stats = {
@@ -962,10 +1096,14 @@ function saveStatsLocally(userId: string, wordCount: number): void {
     
     const today = new Date().toISOString().split('T')[0];
     
-    // If last update was on a different day, reset today's words
+    // Check if this is a new day
     if (stats.lastUpdated !== today) {
+      console.log(`New day detected: Resetting today's words from ${stats.todayWords} to 0`);
       stats.todayWords = 0;
     }
+    
+    // For tracking and debugging
+    console.log(`saveStatsLocally - Before: totalWords=${stats.totalWords}, todayWords=${stats.todayWords}, adding: ${wordCount}`);
     
     // Update stats
     stats.totalWords += wordCount;
@@ -974,7 +1112,10 @@ function saveStatsLocally(userId: string, wordCount: number): void {
     
     // Save back to localStorage
     localStorage.setItem(statsKey, JSON.stringify(stats));
-    console.log('Stats saved locally');
+    console.log(`saveStatsLocally - After: totalWords=${stats.totalWords}, todayWords=${stats.todayWords}`);
+    
+    // Force a refresh of the stats key to ensure other components pick up the change
+    localStorage.setItem('stats_last_updated', Date.now().toString());
   } catch (e) {
     console.error('Error saving stats locally:', e);
   }
@@ -987,8 +1128,8 @@ function getLocalStats(userId: string): { totalWords: number; todayWords: number
     const statsJson = localStorage.getItem(statsKey);
     
     if (!statsJson) {
-    return null;
-  }
+      return null;
+    }
   
     const stats = JSON.parse(statsJson);
     const today = new Date().toISOString().split('T')[0];
@@ -1011,5 +1152,69 @@ function getLocalStats(userId: string): { totalWords: number; todayWords: number
   } catch (e) {
     console.error('Error getting local stats:', e);
     return null;
+  }
+}
+
+// NEW: Function to ensure a user ID is initialized in all necessary tables
+async function ensureUserInitialized(userId: string): Promise<void> {
+  if (!userId) return;
+  
+  // Skip for local and demo users
+  if (userId.startsWith('LOCAL-') || userId.startsWith('DEMO')) {
+    console.log(`Skipping database initialization for local/demo user ${userId}`);
+    return;
+  }
+  
+  console.log(`Ensuring user ${userId} is initialized in all tables`);
+  
+  // Set the initialized flag to avoid multiple initializations in the same session
+  const initKey = `user_${userId}_initialized`;
+  if (localStorage.getItem(initKey)) {
+    console.log(`User ${userId} already initialized in this session`);
+    return;
+  }
+  
+  // Set initialized flag immediately to prevent multiple attempts in rapid succession
+  localStorage.setItem(initKey, 'true');
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Try to initialize user_stats - simplified data
+    try {
+      const { error } = await supabase
+        .from('user_stats')
+        .insert({
+          user_id: userId,
+          words: 0
+        });
+        
+      if (error && error.code !== '23505') { // Ignore duplicate key errors
+        console.error('Error initializing user_stats:', error.message);
+      }
+    } catch (e) {
+      console.error('Exception initializing user_stats:', e);
+    }
+    
+    // Try to initialize user_daily_stats - simplified data
+    try {
+      const { error } = await supabase
+        .from('user_daily_stats')
+        .insert({
+          user_id: userId,
+          date: today,
+          total_words: 0
+        });
+        
+      if (error && error.code !== '23505') { // Ignore duplicate key errors
+        console.error('Error initializing user_daily_stats:', error.message);
+      }
+    } catch (e) {
+      console.error('Exception initializing user_daily_stats:', e);
+    }
+    
+    console.log(`Initialization attempted for user ${userId}`);
+  } catch (error) {
+    console.error(`Error initializing user ${userId}:`, error);
   }
 } 
