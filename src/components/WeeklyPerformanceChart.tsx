@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
 import { useWeeklyStats } from '../hooks/useWeeklyStats';
@@ -13,6 +13,9 @@ interface WeeklyPerformanceChartProps {
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: {
+    duration: 500 // Reduce animation duration for smoother updates
+  },
   plugins: {
     legend: {
       display: false
@@ -50,7 +53,11 @@ const chartOptions = {
       },
       title: {
         display: false
-      }
+      },
+      // Ensure the y-axis always starts at 0
+      beginAtZero: true,
+      // Set suggestedMin to prevent excessive scale changes
+      suggestedMin: 0
     }
   }
 };
@@ -59,8 +66,8 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
   // Add local loading state for smoother transitions
   const [isLocalLoading, setIsLocalLoading] = useState(true);
   
-  // Add a tracking state for successful stats refresh
-  const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
+  // Unique chart instance key to force recreation on significant data changes
+  const [chartInstanceKey, setChartInstanceKey] = useState(1);
   
   const { 
     weeklyStats, 
@@ -75,25 +82,30 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
     refreshStats 
   } = useWeeklyStats();
   
+  // Debounced refresh function to prevent multiple quick refreshes
+  const debouncedRefresh = useCallback(() => {
+    console.log('Executing debouncedRefresh');
+    refreshStats();
+    // Use a new chart instance when data significantly changes
+    setChartInstanceKey(prev => prev + 1);
+  }, [refreshStats]);
+  
   // Add logging for when the component refreshes due to refreshKey changes
   useEffect(() => {
-    console.log('WeeklyPerformanceChart: refreshKey changed to', refreshKey, 'refreshing stats');
+    if (refreshKey <= 0) return; // Skip initial render
+    
+    console.log('WeeklyPerformanceChart: refreshKey changed to', refreshKey);
     
     // Set local loading to true for a smoother transition
     setIsLocalLoading(true);
     
-    // Force a stats refresh every time the key changes
-    const now = Date.now();
-    setLastRefreshTime(now);
-    
-    // Add a small delay to ensure the refresh is processed
+    // Debounce the refresh to prevent flickering from rapid changes
     const refreshTimer = setTimeout(() => {
-      console.log('Executing refreshStats() from refreshKey effect');
-      refreshStats();
-    }, 200);
+      debouncedRefresh();
+    }, 300);
     
     return () => clearTimeout(refreshTimer);
-  }, [refreshKey, refreshStats]);
+  }, [refreshKey, debouncedRefresh]);
   
   // Manage local loading state
   useEffect(() => {
@@ -101,30 +113,93 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
       // Delay the loading transition slightly to avoid flickering
       const loadingTimer = setTimeout(() => {
         setIsLocalLoading(false);
-      }, 200);
+      }, 300);
       
       return () => clearTimeout(loadingTimer);
     }
   }, [loading, weeklyStats]);
   
-  // Log when weekly stats are updated
-  useEffect(() => {
-    if (weeklyStats) {
-      const totalWords = weeklyStats.days.reduce((sum, day) => sum + day.words, 0);
-      console.log('WeeklyPerformanceChart: weekly stats updated', {
-        totalWords,
-        mostProductiveDay: weeklyStats.mostProductiveDayIndex,
-        dayCount: weeklyStats.days.length,
-        lastRefreshTime: new Date(lastRefreshTime).toISOString(),
-      });
-    }
-  }, [weeklyStats, lastRefreshTime]);
+  // Use memoized date calculations to prevent recalculations
+  const dates = useMemo(() => {
+    if (!weeklyStats?.days) return [];
+    return weeklyStats.days.map(day => new Date(day.date));
+  }, [weeklyStats?.days]);
+  
+  // Format date for header - show week range (memoized)
+  const dateRangeText = useMemo(() => {
+    if (dates.length < 7) return '';
+    const startDate = dates[0];
+    const endDate = dates[6];
+    return `${startDate.getDate()} ${startDate.toLocaleDateString('lt-LT', { month: 'long' })} - ${endDate.getDate()} ${endDate.toLocaleDateString('lt-LT', { month: 'long' })}`;
+  }, [dates]);
 
-  // If still loading or there's an error, show placeholder
+  // Prepare chart data from weeklyStats (memoized to prevent unnecessary recalculations)
+  const chartData = useMemo(() => {
+    if (!weeklyStats) {
+      console.log('No weekly stats available for chart');
+      return {
+        labels: dayNames.short,
+        datasets: [{
+          label: 'Žodžiai',
+          data: [0, 0, 0, 0, 0, 0, 0],
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.7
+        }],
+        dates: []
+      };
+    }
+    
+    console.log('Chart data being prepared with:', {
+      dates: dates.map(d => d.toISOString().slice(0, 10)),
+      wordCounts: weeklyStats.days.map(day => day.words),
+      mostProductiveDay: weeklyStats.mostProductiveDayIndex,
+      totalWords: weeklyStats.days.reduce((sum, day) => sum + day.words, 0)
+    });
+    
+    return {
+      labels: dayNames.short,
+      datasets: [
+        {
+          label: 'Žodžiai',
+          data: weeklyStats.days.map(day => day.words),
+          backgroundColor: weeklyStats.days.map((day, index) => 
+            index === weeklyStats.mostProductiveDayIndex 
+              ? 'rgba(75, 192, 192, 0.8)' // Highlight most productive day
+              : 'rgba(54, 162, 235, 0.7)'
+          ),
+          borderColor: weeklyStats.days.map((day, index) => 
+            index === weeklyStats.mostProductiveDayIndex 
+              ? 'rgba(75, 192, 192, 1)' 
+              : 'rgba(54, 162, 235, 1)'
+          ),
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.7
+        }
+      ],
+      dates: dates
+    };
+  }, [weeklyStats, dates]);
+
+  // Get the current day index
+  const currentDayIndex = useMemo(() => 
+    weekOffset === 0 ? (new Date().getDay() + 6) % 7 : 6,
+  [weekOffset]);
+
+  // Show loading placeholder
   if (loading || isLocalLoading) {
     return (
-      <div className="h-48 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
-        <div className="text-gray-400">Duomenys kraunami...</div>
+      <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="text-gray-400">
+          <svg className="animate-spin h-6 w-6 mr-2 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Duomenys kraunami...
+        </div>
       </div>
     );
   }
@@ -133,34 +208,16 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
     return <div className="h-48 bg-gray-100 flex items-center justify-center text-red-500">Nepavyko užkrauti duomenų</div>;
   }
 
-  // Get the dates for the current week
-  const dates = weeklyStats.days.map(day => new Date(day.date));
-  
-  // Format date for header - show week range
-  const startDate = dates[0];
-  const endDate = dates[6];
-  const dateRangeText = `${startDate.getDate()} ${startDate.toLocaleDateString('lt-LT', { month: 'long' })} - ${endDate.getDate()} ${endDate.toLocaleDateString('lt-LT', { month: 'long' })}`;
-
-  // Prepare chart data from weeklyStats - only Words
-  const chartData = {
-    labels: dayNames.short,
-    datasets: [
-      {
-        label: 'Žodžiai',
-        data: weeklyStats.days.map(day => day.words),
-        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.7
-      }
-    ],
-    // Add dates to chart data for tooltip access
-    dates: dates
-  };
-
-  // Get the current day index
-  const currentDayIndex = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : 6;
+  // Force chart refresh when new data arrives
+  useEffect(() => {
+    if (weeklyStats && !loading && !isLocalLoading) {
+      console.log('New weekly stats arrived, forcing chart refresh');
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        setChartInstanceKey(prev => prev + 1);
+      }, 50);
+    }
+  }, [weeklyStats, loading, isLocalLoading]);
 
   return (
     <div className="bg-gray-50 rounded-lg p-4">
@@ -199,38 +256,31 @@ export default function WeeklyPerformanceChart({ refreshKey = 0 }: WeeklyPerform
           </svg>
         </button>
       </div>
-      
-      {/* Calendar-style Day Information */}
-      <div className="flex justify-between mb-5 border-b border-gray-200 pb-2">
-        {weeklyStats.days.map((day, index) => {
-          const date = new Date(day.date);
-          const dayNum = date.getDate();
-          const isCurrentDay = index === currentDayIndex && weekOffset === 0;
-          const isMostProductiveDay = index === weeklyStats.mostProductiveDayIndex;
-          const hasActivity = day.words > 0;
-          
-          return (
-            <div key={index} className="flex flex-col items-center">
-              <span className="text-xs text-gray-500 font-lora mb-1">{dayNames.short[index]}</span>
-              <div 
-                className={`w-10 h-10 flex items-center justify-center rounded-full 
-                  ${isCurrentDay ? 'bg-blue-100 text-blue-800 border-2 border-blue-300' : 
-                  isMostProductiveDay ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 
-                  hasActivity ? 'bg-gray-100 text-gray-800' : 'text-gray-400'}`}
-              >
-                <span className="font-lora text-sm">{dayNum}</span>
-              </div>
-              {isMostProductiveDay && (
-                <span className="text-xs text-yellow-600 mt-1">⭐</span>
-              )}
-            </div>
-          );
-        })}
+
+      {/* Chart Container */}
+      <div className="h-48 relative">
+        <Bar 
+          key={`chart-${chartInstanceKey}-${weekOffset}`} 
+          data={chartData} 
+          options={chartOptions} 
+        />
+        
+        {/* Highlight the most productive day */}
+        {weeklyStats.mostProductiveDayIndex !== -1 && (
+          <div className="absolute top-0 right-0 mt-2 mr-2 bg-white/75 p-1 rounded-md text-xs text-gray-700 font-medium shadow-sm">
+            Produktyviausia diena: {dayNames.full[weeklyStats.mostProductiveDayIndex]}
+          </div>
+        )}
       </div>
       
-      {/* The Chart */}
-      <div className="h-48 w-full">
-        <Bar data={chartData} options={chartOptions} />
+      {/* Weekly total statistics */}
+      <div className="flex justify-between mt-4 text-sm text-gray-600">
+        <div>
+          Iš viso žodžių: <span className="font-medium text-gray-800">{weeklyStats.days.reduce((sum, day) => sum + day.words, 0)}</span>
+        </div>
+        <div>
+          Dienų, kai rašyta: <span className="font-medium text-gray-800">{weeklyStats.days.filter(d => d.words > 0).length}</span>
+        </div>
       </div>
     </div>
   );

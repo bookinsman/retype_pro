@@ -378,15 +378,21 @@ export async function logWordCount(wordCount: number): Promise<boolean> {
   
   try {
     const userId = getCurrentUserId();
-    if (!userId) return false;
+    if (!userId) {
+      console.error('No user ID found, cannot log word count');
+      return false;
+    }
+    
+    console.log(`Logging ${wordCount} words for user ${userId}`);
+    
     // Create a minimal session record
     const session: TypingSession = {
       user_id: userId,
       original_text: "",  // Empty for direct word count logging
       typed_text: "",     // Empty for direct word count logging
       word_count: wordCount,
-      time_spent_seconds: 0, // Add required field with default value
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      time_spent_seconds: getTrackedTimeInSeconds()
     };
     
     const { error } = await supabase
@@ -394,13 +400,56 @@ export async function logWordCount(wordCount: number): Promise<boolean> {
       .insert(session);
       
     if (error) {
-      console.error('Error logging word count:', error.message);
+      console.error('Error logging word count to sessions table:', error.message);
       return false;
     }
+    
+    // Update local storage for immediate feedback
+    const today = formatDateToYYYYMMDD(new Date());
+    const localKey = `wordCount_${today}`;
+    const currentCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+    localStorage.setItem(localKey, (currentCount + wordCount).toString());
+    
+    console.log(`Successfully logged ${wordCount} words, local total: ${currentCount + wordCount}`);
+    // Trigger local storage event for other components to refresh
+    localStorage.setItem('stats_last_updated', Date.now().toString());
     
     return true;
   } catch (error) {
     console.error('Exception in logWordCount:', error);
+    return false;
+  }
+}
+
+/**
+ * Directly log word counts for paragraph completions with better feedback
+ * @param paragraphText The text of the completed paragraph 
+ * @returns Promise with success/failure
+ */
+export async function logParagraphCompletion(paragraphText: string): Promise<boolean> {
+  try {
+    const wordCount = countWords(paragraphText);
+    console.log(`Logging paragraph completion: ${wordCount} words from text "${paragraphText.substring(0, 30)}..."`);
+    
+    // First update local storage for immediate feedback
+    const today = formatDateToYYYYMMDD(new Date());
+    const localKey = `wordCount_${today}`;
+    const currentCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+    const newCount = currentCount + wordCount;
+    
+    localStorage.setItem(localKey, newCount.toString());
+    console.log(`Updated local word count to ${newCount}`);
+    
+    // Then log to Supabase - use this function to ensure consistent logging
+    const success = await logWordCount(wordCount);
+    
+    if (!success) {
+      console.error('Failed to log paragraph completion to Supabase');
+    }
+    
+    return success;
+  } catch (error) {
+    console.error('Error logging paragraph completion:', error);
     return false;
   }
 } 

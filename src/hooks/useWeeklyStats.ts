@@ -202,47 +202,35 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     return streak;
   }, []);
 
-  // Function to manually refresh stats
+  // Fetch weekly stats
   const refreshStats = useCallback(() => {
-    console.log('Manual refresh of weekly stats requested');
-    
-    // Force refresh with a slight delay to allow any pending state updates
-    setTimeout(() => {
-      fetchWeeklyStats(true); // Force refresh 
-    }, 300);
+    console.log('Refreshing weekly stats...');
+    // Force a refresh of the data - this is called when the user completes a paragraph
+    fetchWeeklyStats(true);
   }, [fetchWeeklyStats]);
 
-  // Fetch stats on mount and when weekOffset changes
+  // Fetch data on mount and when week offset changes
   useEffect(() => {
-    let isMounted = true;
-    
-    const fetchData = async () => {
-      if (isMounted) {
-        await fetchWeeklyStats();
-      }
-    };
-    
-    fetchData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchWeeklyStats, weekOffset]);
+    console.log(`Week offset changed to ${weekOffset}, fetching new data...`);
+    fetchWeeklyStats(false);
+  }, [weekOffset, fetchWeeklyStats]);
 
-  // Set up stats refresh when localStorage changes (for real-time updates)
+  // Listen for changes in local storage to update stats when another component updates
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'stats_last_updated') {
-        console.log('Stats updated in localStorage, refreshing weekly stats');
-        refreshStats();
+      if (e.key && (
+        e.key.startsWith('wordCount_') || 
+        e.key.includes('paragraph_') || 
+        e.key.includes('wisdom_')
+      )) {
+        console.log('Local storage change detected that affects word counts, refreshing stats');
+        fetchWeeklyStats(true);
       }
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [refreshStats]);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [fetchWeeklyStats]);
 
   return {
     weeklyStats,

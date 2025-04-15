@@ -29,6 +29,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// IMPORTANT: Set to false to use the actual Supabase database
+const useMockData = false;
+
 /**
  * Gets the current user ID from localStorage, or creates a new one if not found
  * @returns The current user ID

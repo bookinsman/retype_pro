@@ -160,11 +160,11 @@
       });
     }
   }
-})({"7KwkS":[function(require,module,exports,__globalThis) {
+})({"g0ov7":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 1234;
+var HMR_SERVER_PORT = 5000;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -33252,7 +33252,7 @@ $RefreshReg$(_c2, "WisdomMinimalLanding");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","../services/supabaseClient":"jgwHA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"d3GZa":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","../components/ui/button":"d3GZa","framer-motion":"6Fwkt","react":"jMk1U","react-router-dom":"61z4w","../components/SlideInText":"5PMFt","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/supabaseClient":"jgwHA"}],"d3GZa":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$b71d = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$b71d.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -45927,6 +45927,8 @@ const supabase = (0, _supabaseJs.createClient)(supabaseUrl, supabaseAnonKey, {
         fetch: customFetch
     }
 });
+// IMPORTANT: Set to false to use the actual Supabase database
+const useMockData = false;
 function getUserId() {
     // Check for a locally stored user ID
     const storedId = localStorage.getItem('user_id') || localStorage.getItem('userId');
@@ -46701,7 +46703,7 @@ async function ensureUserInitialized(userId) {
     }
 }
 
-},{"@supabase/supabase-js":"gKVA2","8f54397f53e30ae0":"hD5tF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gKVA2":[function(require,module,exports,__globalThis) {
+},{"@supabase/supabase-js":"gKVA2","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","8f54397f53e30ae0":"hD5tF"}],"gKVA2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PostgrestError", ()=>(0, _postgrestJs.PostgrestError));
@@ -57243,7 +57245,7 @@ $RefreshReg$(_c, "ArticlePage");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","../styles/ArticlePage.css":"fFc7x","../components/StatsPanel":"8q41N","../components/AudioPlayer":"iGyvp","../services/statsService":"hTmM7","../components/Icons":"hpaIY","../utils/characterUtils":"l3AXT","../components/WeeklyPerformanceChart":"iNIIe","../components/TotalStats":"aud5a","../components/DailyStats":"6cybX","../services/contentService":"2I4vR","../components/LoadingAnimation":"8jtK0","../services/sessionService":"9Rug3","chart.js":"6U2cz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"fFc7x":[function() {},{}],"8q41N":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","../styles/ArticlePage.css":"fFc7x","../components/StatsPanel":"8q41N","../components/AudioPlayer":"iGyvp","../components/Icons":"hpaIY","../utils/characterUtils":"l3AXT","../components/WeeklyPerformanceChart":"iNIIe","../components/TotalStats":"aud5a","../components/DailyStats":"6cybX","../services/contentService":"2I4vR","../components/LoadingAnimation":"8jtK0","chart.js":"6U2cz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/sessionService":"9Rug3","../services/statsService":"hTmM7"}],"fFc7x":[function() {},{}],"8q41N":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$21fe = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$21fe.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -57647,167 +57649,7 @@ $RefreshReg$(_c, "AudioPlayer");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../styles/AudioPlayer.css":"4aImU","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"4aImU":[function() {},{}],"hTmM7":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * Format a date to YYYY-MM-DD string format
- * @param date The date to format
- * @returns The formatted date string
- */ parcelHelpers.export(exports, "formatDateToYYYYMMDD", ()=>formatDateToYYYYMMDD);
-// Format time from seconds to "mm:ss" format
-parcelHelpers.export(exports, "formatTime", ()=>formatTime);
-// Set current user - this is not used anymore, as we use localStorage directly
-parcelHelpers.export(exports, "setCurrentUser", ()=>setCurrentUser);
-// Get total stats
-parcelHelpers.export(exports, "getUserStats", ()=>getUserStats);
-// Get today's stats
-parcelHelpers.export(exports, "getTodayStats", ()=>getTodayStats);
-// Update word count
-parcelHelpers.export(exports, "updateWordCount", ()=>updateWordCount);
-// Track completed paragraph
-parcelHelpers.export(exports, "trackCompletedParagraph", ()=>trackCompletedParagraph);
-// Track time spent - now just a placeholder
-parcelHelpers.export(exports, "trackTimeSpent", ()=>trackTimeSpent);
-// Calculate typing speed
-parcelHelpers.export(exports, "calculateSpeed", ()=>calculateSpeed);
-// Get weekly stats for chart
-parcelHelpers.export(exports, "getWeeklyStatsForChart", ()=>getWeeklyStatsForChart);
-var _supabaseClient = require("./supabaseClient");
-function formatDateToYYYYMMDD(date) {
-    return date.toISOString().split('T')[0];
-}
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-function setCurrentUser(userId) {
-// Implementation not needed as we use localStorage in supabaseClient
-}
-async function getUserStats() {
-    // Get total word count from Supabase
-    const words = await (0, _supabaseClient.getTotalWordCount)();
-    // For now, we're only tracking words
-    return {
-        words,
-        texts: 0,
-        timeSpentSeconds: 0,
-        speed: 0
-    };
-}
-async function getTodayStats() {
-    // Get today's word count from Supabase
-    const words = await (0, _supabaseClient.getTodayWordCount)();
-    // For now, we're only tracking words
-    return {
-        words,
-        texts: 0,
-        timeSpentSeconds: 0,
-        speed: 0
-    };
-}
-async function updateWordCount(newWords) {
-    console.log(`updateWordCount called with ${newWords} words`);
-    // Get the current counts (don't add yet, just retrieve them)
-    const existingWords = parseInt(localStorage.getItem('total_words') || '0', 10);
-    // Get today's date in ISO format (YYYY-MM-DD)
-    const today = new Date().toISOString().split('T')[0];
-    const todayKey = `words_${today}`;
-    const existingTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
-    console.log(`Current stats before update - Total: ${existingWords}, Today: ${existingTodayWords}`);
-    // Log the new words to Supabase, which will also update localStorage via saveStatsLocally
-    await (0, _supabaseClient.logWordCount)(newWords);
-    // After Supabase update, get the latest counts
-    const updatedTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
-    const updatedTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
-    console.log(`updateWordCount - Total words: ${updatedTotalWords}, Today's words: ${updatedTodayWords}`);
-    // Return the updated stats (for UI immediate feedback)
-    return {
-        words: updatedTotalWords,
-        texts: 0,
-        timeSpentSeconds: 0,
-        speed: 0
-    };
-}
-async function trackCompletedParagraph(text) {
-    const wordCount = text.trim().split(/\s+/).length;
-    // Enhanced logging for stats update
-    console.log(`Tracking paragraph completion: ${wordCount} words`);
-    // Also save the paragraph ID and word count for extra reliability
-    try {
-        const paragraphsCompletedKey = 'paragraphs_completed';
-        const paragraphsCompleted = parseInt(localStorage.getItem(paragraphsCompletedKey) || '0', 10);
-        localStorage.setItem(paragraphsCompletedKey, (paragraphsCompleted + 1).toString());
-        const paragraphWordsKey = 'paragraph_words';
-        const paragraphWords = JSON.parse(localStorage.getItem(paragraphWordsKey) || '[]');
-        const newEntry = {
-            timestamp: new Date().toISOString(),
-            words: wordCount
-        };
-        paragraphWords.push(newEntry);
-        localStorage.setItem(paragraphWordsKey, JSON.stringify(paragraphWords));
-        console.log('Saved paragraph completion to localStorage:', newEntry);
-        // Update the paragraph count display immediately
-        const totalWordsKey = 'total_words';
-        const currentTotal = parseInt(localStorage.getItem(totalWordsKey) || '0', 10);
-        const newTotal = currentTotal + wordCount;
-        localStorage.setItem(totalWordsKey, newTotal.toString());
-        console.log(`Updated total_words in localStorage immediately: ${currentTotal} -> ${newTotal}`);
-    } catch (e) {
-        console.error('Error saving paragraph data to localStorage:', e);
-    }
-    try {
-        // First update the word count in Supabase and localStorage
-        console.log('Updating word count in Supabase and localStorage...');
-        const updatedStats = await updateWordCount(wordCount);
-        // After word count update, refresh the cache in weeklyStatsService
-        try {
-            console.log('Refreshing weekly stats cache...');
-            const { getWeeklyStats } = await require("ef87c16666e59779");
-            // Force a refresh of the weekly stats by calling it with the current week offset
-            await getWeeklyStats(0);
-            console.log('Weekly stats refreshed after paragraph completion');
-        } catch (error) {
-            console.error('Failed to refresh weekly stats:', error);
-        }
-        return updatedStats;
-    } catch (error) {
-        console.error('Error in tracking paragraph completion:', error);
-        // In case of error, still return something reasonable
-        const fallbackTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
-        return {
-            words: fallbackTotalWords,
-            texts: 0,
-            timeSpentSeconds: 0,
-            speed: 0
-        };
-    }
-}
-async function trackTimeSpent(seconds) {
-    // Currently not tracking time in Supabase
-    return getUserStats();
-}
-function calculateSpeed(words, timeInSeconds) {
-    if (timeInSeconds === 0) return 0;
-    return Math.round(words / timeInSeconds * 60); // Words per minute
-}
-async function getWeeklyStatsForChart() {
-    const weeklyData = await (0, _supabaseClient.getWeeklyStats)();
-    // Convert to DailyStats format
-    return weeklyData.map((item)=>({
-            date: item.date,
-            words: item.count,
-            texts: 0,
-            timeSpentSeconds: 0,
-            speed: 0
-        }));
-}
-
-},{"./supabaseClient":"jgwHA","ef87c16666e59779":"4G8QY","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4G8QY":[function(require,module,exports,__globalThis) {
-module.exports = Promise.resolve(module.bundle.root("2q4G4"));
-
-},{"2q4G4":"2q4G4"}],"hpaIY":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../styles/AudioPlayer.css":"4aImU","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"4aImU":[function() {},{}],"hpaIY":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$ddc2 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$ddc2.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -57906,6 +57748,9 @@ var _s = $RefreshSig$();
 const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+        duration: 500 // Reduce animation duration for smoother updates
+    },
     plugins: {
         legend: {
             display: false
@@ -57943,7 +57788,11 @@ const chartOptions = {
             },
             title: {
                 display: false
-            }
+            },
+            // Ensure the y-axis always starts at 0
+            beginAtZero: true,
+            // Set suggestedMin to prevent excessive scale changes
+            suggestedMin: 0
         }
     }
 };
@@ -57951,26 +57800,32 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
     _s();
     // Add local loading state for smoother transitions
     const [isLocalLoading, setIsLocalLoading] = (0, _react.useState)(true);
-    // Add a tracking state for successful stats refresh
-    const [lastRefreshTime, setLastRefreshTime] = (0, _react.useState)(0);
+    // Unique chart instance key to force recreation on significant data changes
+    const [chartInstanceKey, setChartInstanceKey] = (0, _react.useState)(1);
     const { weeklyStats, loading, error, weekOffset, previousWeek, nextWeek, currentWeek, currentMonthName, currentYear, refreshStats } = (0, _useWeeklyStats.useWeeklyStats)();
+    // Debounced refresh function to prevent multiple quick refreshes
+    const debouncedRefresh = (0, _react.useCallback)(()=>{
+        console.log('Executing debouncedRefresh');
+        refreshStats();
+        // Use a new chart instance when data significantly changes
+        setChartInstanceKey((prev)=>prev + 1);
+    }, [
+        refreshStats
+    ]);
     // Add logging for when the component refreshes due to refreshKey changes
     (0, _react.useEffect)(()=>{
-        console.log('WeeklyPerformanceChart: refreshKey changed to', refreshKey, 'refreshing stats');
+        if (refreshKey <= 0) return; // Skip initial render
+        console.log('WeeklyPerformanceChart: refreshKey changed to', refreshKey);
         // Set local loading to true for a smoother transition
         setIsLocalLoading(true);
-        // Force a stats refresh every time the key changes
-        const now = Date.now();
-        setLastRefreshTime(now);
-        // Add a small delay to ensure the refresh is processed
+        // Debounce the refresh to prevent flickering from rapid changes
         const refreshTimer = setTimeout(()=>{
-            console.log('Executing refreshStats() from refreshKey effect');
-            refreshStats();
-        }, 200);
+            debouncedRefresh();
+        }, 300);
         return ()=>clearTimeout(refreshTimer);
     }, [
         refreshKey,
-        refreshStats
+        debouncedRefresh
     ]);
     // Manage local loading state
     (0, _react.useEffect)(()=>{
@@ -57978,42 +57833,140 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
             // Delay the loading transition slightly to avoid flickering
             const loadingTimer = setTimeout(()=>{
                 setIsLocalLoading(false);
-            }, 200);
+            }, 300);
             return ()=>clearTimeout(loadingTimer);
         }
     }, [
         loading,
         weeklyStats
     ]);
-    // Log when weekly stats are updated
-    (0, _react.useEffect)(()=>{
-        if (weeklyStats) {
-            const totalWords = weeklyStats.days.reduce((sum, day)=>sum + day.words, 0);
-            console.log('WeeklyPerformanceChart: weekly stats updated', {
-                totalWords,
-                mostProductiveDay: weeklyStats.mostProductiveDayIndex,
-                dayCount: weeklyStats.days.length,
-                lastRefreshTime: new Date(lastRefreshTime).toISOString()
-            });
+    // Use memoized date calculations to prevent recalculations
+    const dates = (0, _react.useMemo)(()=>{
+        if (!weeklyStats?.days) return [];
+        return weeklyStats.days.map((day)=>new Date(day.date));
+    }, [
+        weeklyStats?.days
+    ]);
+    // Format date for header - show week range (memoized)
+    const dateRangeText = (0, _react.useMemo)(()=>{
+        if (dates.length < 7) return '';
+        const startDate = dates[0];
+        const endDate = dates[6];
+        return `${startDate.getDate()} ${startDate.toLocaleDateString('lt-LT', {
+            month: 'long'
+        })} - ${endDate.getDate()} ${endDate.toLocaleDateString('lt-LT', {
+            month: 'long'
+        })}`;
+    }, [
+        dates
+    ]);
+    // Prepare chart data from weeklyStats (memoized to prevent unnecessary recalculations)
+    const chartData = (0, _react.useMemo)(()=>{
+        if (!weeklyStats) {
+            console.log('No weekly stats available for chart');
+            return {
+                labels: (0, _weeklyStatsService.dayNames).short,
+                datasets: [
+                    {
+                        label: "\u017Dod\u017Eiai",
+                        data: [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.7
+                    }
+                ],
+                dates: []
+            };
         }
+        console.log('Chart data being prepared with:', {
+            dates: dates.map((d)=>d.toISOString().slice(0, 10)),
+            wordCounts: weeklyStats.days.map((day)=>day.words),
+            mostProductiveDay: weeklyStats.mostProductiveDayIndex,
+            totalWords: weeklyStats.days.reduce((sum, day)=>sum + day.words, 0)
+        });
+        return {
+            labels: (0, _weeklyStatsService.dayNames).short,
+            datasets: [
+                {
+                    label: "\u017Dod\u017Eiai",
+                    data: weeklyStats.days.map((day)=>day.words),
+                    backgroundColor: weeklyStats.days.map((day, index)=>index === weeklyStats.mostProductiveDayIndex ? 'rgba(75, 192, 192, 0.8)' // Highlight most productive day
+                         : 'rgba(54, 162, 235, 0.7)'),
+                    borderColor: weeklyStats.days.map((day, index)=>index === weeklyStats.mostProductiveDayIndex ? 'rgba(75, 192, 192, 1)' : 'rgba(54, 162, 235, 1)'),
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barPercentage: 0.7
+                }
+            ],
+            dates: dates
+        };
     }, [
         weeklyStats,
-        lastRefreshTime
+        dates
     ]);
-    // If still loading or there's an error, show placeholder
+    // Get the current day index
+    const currentDayIndex = (0, _react.useMemo)(()=>weekOffset === 0 ? (new Date().getDay() + 6) % 7 : 6, [
+        weekOffset
+    ]);
+    // Show loading placeholder
     if (loading || isLocalLoading) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-        className: "h-48 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center",
+        className: "h-48 bg-gray-100 rounded-lg flex items-center justify-center",
         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
             className: "text-gray-400",
-            children: "Duomenys kraunami..."
-        }, void 0, false, {
+            children: [
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("svg", {
+                    className: "animate-spin h-6 w-6 mr-2 inline-block",
+                    xmlns: "http://www.w3.org/2000/svg",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    children: [
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("circle", {
+                            className: "opacity-25",
+                            cx: "12",
+                            cy: "12",
+                            r: "10",
+                            stroke: "currentColor",
+                            strokeWidth: "4"
+                        }, void 0, false, {
+                            fileName: "src/components/WeeklyPerformanceChart.tsx",
+                            lineNumber: 198,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("path", {
+                            className: "opacity-75",
+                            fill: "currentColor",
+                            d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        }, void 0, false, {
+                            fileName: "src/components/WeeklyPerformanceChart.tsx",
+                            lineNumber: 199,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "src/components/WeeklyPerformanceChart.tsx",
+                    lineNumber: 197,
+                    columnNumber: 11
+                }, this),
+                "Duomenys kraunami..."
+            ]
+        }, void 0, true, {
             fileName: "src/components/WeeklyPerformanceChart.tsx",
-            lineNumber: 127,
+            lineNumber: 196,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/components/WeeklyPerformanceChart.tsx",
-        lineNumber: 126,
+        lineNumber: 195,
         columnNumber: 7
     }, this);
     if (error || !weeklyStats) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -58021,38 +57974,23 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
         children: "Nepavyko u\u017Ekrauti duomen\u0173"
     }, void 0, false, {
         fileName: "src/components/WeeklyPerformanceChart.tsx",
-        lineNumber: 133,
+        lineNumber: 208,
         columnNumber: 12
     }, this);
-    // Get the dates for the current week
-    const dates = weeklyStats.days.map((day)=>new Date(day.date));
-    // Format date for header - show week range
-    const startDate = dates[0];
-    const endDate = dates[6];
-    const dateRangeText = `${startDate.getDate()} ${startDate.toLocaleDateString('lt-LT', {
-        month: 'long'
-    })} - ${endDate.getDate()} ${endDate.toLocaleDateString('lt-LT', {
-        month: 'long'
-    })}`;
-    // Prepare chart data from weeklyStats - only Words
-    const chartData = {
-        labels: (0, _weeklyStatsService.dayNames).short,
-        datasets: [
-            {
-                label: "\u017Dod\u017Eiai",
-                data: weeklyStats.days.map((day)=>day.words),
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-                borderRadius: 4,
-                barPercentage: 0.7
-            }
-        ],
-        // Add dates to chart data for tooltip access
-        dates: dates
-    };
-    // Get the current day index
-    const currentDayIndex = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : 6;
+    // Force chart refresh when new data arrives
+    (0, _react.useEffect)(()=>{
+        if (weeklyStats && !loading && !isLocalLoading) {
+            console.log('New weekly stats arrived, forcing chart refresh');
+            // Small delay to ensure DOM is ready
+            setTimeout(()=>{
+                setChartInstanceKey((prev)=>prev + 1);
+            }, 50);
+        }
+    }, [
+        weeklyStats,
+        loading,
+        isLocalLoading
+    ]);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         className: "bg-gray-50 rounded-lg p-4",
         children: [
@@ -58061,7 +57999,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                 children: "Savaitinis \u017Eod\u017Ei\u0173 skai\u010Dius"
             }, void 0, false, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 167,
+                lineNumber: 224,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -58082,17 +58020,17 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 clipRule: "evenodd"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 176,
+                                lineNumber: 233,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/components/WeeklyPerformanceChart.tsx",
-                            lineNumber: 175,
+                            lineNumber: 232,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 170,
+                        lineNumber: 227,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -58103,7 +58041,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 children: dateRangeText
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 180,
+                                lineNumber: 237,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -58115,7 +58053,7 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 181,
+                                lineNumber: 238,
                                 columnNumber: 11
                             }, this),
                             weekOffset !== 0 && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
@@ -58125,13 +58063,13 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 children: "(Dabartin\u0117 savait\u0117)"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 183,
+                                lineNumber: 240,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 179,
+                        lineNumber: 236,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
@@ -58149,103 +58087,104 @@ function WeeklyPerformanceChart({ refreshKey = 0 }) {
                                 clipRule: "evenodd"
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 198,
+                                lineNumber: 255,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/components/WeeklyPerformanceChart.tsx",
-                            lineNumber: 197,
+                            lineNumber: 254,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 192,
+                        lineNumber: 249,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 169,
+                lineNumber: 226,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                className: "flex justify-between mb-5 border-b border-gray-200 pb-2",
-                children: weeklyStats.days.map((day, index)=>{
-                    const date = new Date(day.date);
-                    const dayNum = date.getDate();
-                    const isCurrentDay = index === currentDayIndex && weekOffset === 0;
-                    const isMostProductiveDay = index === weeklyStats.mostProductiveDayIndex;
-                    const hasActivity = day.words > 0;
-                    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                        className: "flex flex-col items-center",
+                className: "h-48 relative",
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactChartjs2.Bar), {
+                        data: chartData,
+                        options: chartOptions
+                    }, `chart-${chartInstanceKey}-${weekOffset}`, false, {
+                        fileName: "src/components/WeeklyPerformanceChart.tsx",
+                        lineNumber: 262,
+                        columnNumber: 9
+                    }, this),
+                    weeklyStats.mostProductiveDayIndex !== -1 && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        className: "absolute top-0 right-0 mt-2 mr-2 bg-white/75 p-1 rounded-md text-xs text-gray-700 font-medium shadow-sm",
                         children: [
+                            "Produktyviausia diena: ",
+                            (0, _weeklyStatsService.dayNames).full[weeklyStats.mostProductiveDayIndex]
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/components/WeeklyPerformanceChart.tsx",
+                        lineNumber: 270,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "src/components/WeeklyPerformanceChart.tsx",
+                lineNumber: 261,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                className: "flex justify-between mt-4 text-sm text-gray-600",
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        children: [
+                            "I\u0161 viso \u017Eod\u017Ei\u0173: ",
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                                className: "text-xs text-gray-500 font-lora mb-1",
-                                children: (0, _weeklyStatsService.dayNames).short[index]
+                                className: "font-medium text-gray-800",
+                                children: weeklyStats.days.reduce((sum, day)=>sum + day.words, 0)
                             }, void 0, false, {
                                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 214,
-                                columnNumber: 15
-                            }, this),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                className: `w-10 h-10 flex items-center justify-center rounded-full 
-                  ${isCurrentDay ? 'bg-blue-100 text-blue-800 border-2 border-blue-300' : isMostProductiveDay ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : hasActivity ? 'bg-gray-100 text-gray-800' : 'text-gray-400'}`,
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                                    className: "font-lora text-sm",
-                                    children: dayNum
-                                }, void 0, false, {
-                                    fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                    lineNumber: 221,
-                                    columnNumber: 17
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 215,
-                                columnNumber: 15
-                            }, this),
-                            isMostProductiveDay && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                                className: "text-xs text-yellow-600 mt-1",
-                                children: "\u2B50"
-                            }, void 0, false, {
-                                fileName: "src/components/WeeklyPerformanceChart.tsx",
-                                lineNumber: 224,
-                                columnNumber: 17
+                                lineNumber: 279,
+                                columnNumber: 27
                             }, this)
                         ]
-                    }, index, true, {
+                    }, void 0, true, {
                         fileName: "src/components/WeeklyPerformanceChart.tsx",
-                        lineNumber: 213,
-                        columnNumber: 13
-                    }, this);
-                })
-            }, void 0, false, {
+                        lineNumber: 278,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        children: [
+                            "Dien\u0173, kai ra\u0161yta: ",
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                className: "font-medium text-gray-800",
+                                children: weeklyStats.days.filter((d)=>d.words > 0).length
+                            }, void 0, false, {
+                                fileName: "src/components/WeeklyPerformanceChart.tsx",
+                                lineNumber: 282,
+                                columnNumber: 30
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/components/WeeklyPerformanceChart.tsx",
+                        lineNumber: 281,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 204,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                className: "h-48 w-full",
-                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactChartjs2.Bar), {
-                    data: chartData,
-                    options: chartOptions
-                }, void 0, false, {
-                    fileName: "src/components/WeeklyPerformanceChart.tsx",
-                    lineNumber: 233,
-                    columnNumber: 9
-                }, this)
-            }, void 0, false, {
-                fileName: "src/components/WeeklyPerformanceChart.tsx",
-                lineNumber: 232,
+                lineNumber: 277,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/components/WeeklyPerformanceChart.tsx",
-        lineNumber: 166,
+        lineNumber: 223,
         columnNumber: 5
     }, this);
 }
-_s(WeeklyPerformanceChart, "g+hikW0lwcK9JqpFGgmEh8yrKEc=", false, function() {
+_s(WeeklyPerformanceChart, "i2NnGzoLQUMd2jM7+Cp/SixEMac=", false, function() {
     return [
         (0, _useWeeklyStats.useWeeklyStats)
     ];
@@ -72073,44 +72012,34 @@ function useWeeklyStats() {
         }
         return streak;
     }, []);
-    // Function to manually refresh stats
+    // Fetch weekly stats
     const refreshStats = (0, _react.useCallback)(()=>{
-        console.log('Manual refresh of weekly stats requested');
-        // Force refresh with a slight delay to allow any pending state updates
-        setTimeout(()=>{
-            fetchWeeklyStats(true); // Force refresh 
-        }, 300);
+        console.log('Refreshing weekly stats...');
+        // Force a refresh of the data - this is called when the user completes a paragraph
+        fetchWeeklyStats(true);
     }, [
         fetchWeeklyStats
     ]);
-    // Fetch stats on mount and when weekOffset changes
+    // Fetch data on mount and when week offset changes
     (0, _react.useEffect)(()=>{
-        let isMounted = true;
-        const fetchData = async ()=>{
-            if (isMounted) await fetchWeeklyStats();
-        };
-        fetchData();
-        return ()=>{
-            isMounted = false;
-        };
+        console.log(`Week offset changed to ${weekOffset}, fetching new data...`);
+        fetchWeeklyStats(false);
     }, [
-        fetchWeeklyStats,
-        weekOffset
+        weekOffset,
+        fetchWeeklyStats
     ]);
-    // Set up stats refresh when localStorage changes (for real-time updates)
+    // Listen for changes in local storage to update stats when another component updates
     (0, _react.useEffect)(()=>{
         const handleStorageChange = (e)=>{
-            if (e.key === 'stats_last_updated') {
-                console.log('Stats updated in localStorage, refreshing weekly stats');
-                refreshStats();
+            if (e.key && (e.key.startsWith('wordCount_') || e.key.includes('paragraph_') || e.key.includes('wisdom_'))) {
+                console.log('Local storage change detected that affects word counts, refreshing stats');
+                fetchWeeklyStats(true);
             }
         };
         window.addEventListener('storage', handleStorageChange);
-        return ()=>{
-            window.removeEventListener('storage', handleStorageChange);
-        };
+        return ()=>window.removeEventListener('storage', handleStorageChange);
     }, [
-        refreshStats
+        fetchWeeklyStats
     ]);
     return {
         weeklyStats,
@@ -72133,7 +72062,7 @@ function useWeeklyStats() {
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react":"jMk1U","../services/weeklyStatsService":"2q4G4","../services/sessionService":"9Rug3","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2q4G4":[function(require,module,exports,__globalThis) {
+},{"react":"jMk1U","../services/weeklyStatsService":"2q4G4","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/sessionService":"9Rug3"}],"2q4G4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "dayNames", ()=>dayNames);
@@ -72469,6 +72398,11 @@ parcelHelpers.defineInteropFlag(exports);
  * @param wordCount The number of words to log
  * @returns Promise with success/failure
  */ parcelHelpers.export(exports, "logWordCount", ()=>logWordCount);
+/**
+ * Directly log word counts for paragraph completions with better feedback
+ * @param paragraphText The text of the completed paragraph 
+ * @returns Promise with success/failure
+ */ parcelHelpers.export(exports, "logParagraphCompletion", ()=>logParagraphCompletion);
 var _supabaseClient = require("./supabaseClient");
 var _statsService = require("./statsService");
 function countWords(text) {
@@ -72672,29 +72606,221 @@ async function logWordCount(wordCount) {
     if (!wordCount || wordCount <= 0) return false;
     try {
         const userId = (0, _supabaseClient.getCurrentUserId)();
-        if (!userId) return false;
+        if (!userId) {
+            console.error('No user ID found, cannot log word count');
+            return false;
+        }
+        console.log(`Logging ${wordCount} words for user ${userId}`);
         // Create a minimal session record
         const session = {
             user_id: userId,
             original_text: "",
             typed_text: "",
             word_count: wordCount,
-            time_spent_seconds: 0,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            time_spent_seconds: getTrackedTimeInSeconds()
         };
         const { error } = await (0, _supabaseClient.supabase).from('sessions').insert(session);
         if (error) {
-            console.error('Error logging word count:', error.message);
+            console.error('Error logging word count to sessions table:', error.message);
             return false;
         }
+        // Update local storage for immediate feedback
+        const today = (0, _statsService.formatDateToYYYYMMDD)(new Date());
+        const localKey = `wordCount_${today}`;
+        const currentCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+        localStorage.setItem(localKey, (currentCount + wordCount).toString());
+        console.log(`Successfully logged ${wordCount} words, local total: ${currentCount + wordCount}`);
+        // Trigger local storage event for other components to refresh
+        localStorage.setItem('stats_last_updated', Date.now().toString());
         return true;
     } catch (error) {
         console.error('Exception in logWordCount:', error);
         return false;
     }
 }
+async function logParagraphCompletion(paragraphText) {
+    try {
+        const wordCount = countWords(paragraphText);
+        console.log(`Logging paragraph completion: ${wordCount} words from text "${paragraphText.substring(0, 30)}..."`);
+        // First update local storage for immediate feedback
+        const today = (0, _statsService.formatDateToYYYYMMDD)(new Date());
+        const localKey = `wordCount_${today}`;
+        const currentCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+        const newCount = currentCount + wordCount;
+        localStorage.setItem(localKey, newCount.toString());
+        console.log(`Updated local word count to ${newCount}`);
+        // Then log to Supabase - use this function to ensure consistent logging
+        const success = await logWordCount(wordCount);
+        if (!success) console.error('Failed to log paragraph completion to Supabase');
+        return success;
+    } catch (error) {
+        console.error('Error logging paragraph completion:', error);
+        return false;
+    }
+}
 
-},{"./supabaseClient":"jgwHA","./statsService":"hTmM7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aud5a":[function(require,module,exports,__globalThis) {
+},{"./supabaseClient":"jgwHA","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","./statsService":"hTmM7"}],"hTmM7":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * Format a date to YYYY-MM-DD string format
+ * @param date The date to format
+ * @returns The formatted date string
+ */ parcelHelpers.export(exports, "formatDateToYYYYMMDD", ()=>formatDateToYYYYMMDD);
+// Format time from seconds to "mm:ss" format
+parcelHelpers.export(exports, "formatTime", ()=>formatTime);
+// Set current user - this is not used anymore, as we use localStorage directly
+parcelHelpers.export(exports, "setCurrentUser", ()=>setCurrentUser);
+// Get total stats
+parcelHelpers.export(exports, "getUserStats", ()=>getUserStats);
+// Get today's stats
+parcelHelpers.export(exports, "getTodayStats", ()=>getTodayStats);
+// Update word count
+parcelHelpers.export(exports, "updateWordCount", ()=>updateWordCount);
+// Track completed paragraph
+parcelHelpers.export(exports, "trackCompletedParagraph", ()=>trackCompletedParagraph);
+// Track time spent - now just a placeholder
+parcelHelpers.export(exports, "trackTimeSpent", ()=>trackTimeSpent);
+// Calculate typing speed
+parcelHelpers.export(exports, "calculateSpeed", ()=>calculateSpeed);
+// Get weekly stats for chart
+parcelHelpers.export(exports, "getWeeklyStatsForChart", ()=>getWeeklyStatsForChart);
+var _supabaseClient = require("./supabaseClient");
+function formatDateToYYYYMMDD(date) {
+    return date.toISOString().split('T')[0];
+}
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+function setCurrentUser(userId) {
+// Implementation not needed as we use localStorage in supabaseClient
+}
+async function getUserStats() {
+    // Get total word count from Supabase
+    const words = await (0, _supabaseClient.getTotalWordCount)();
+    // For now, we're only tracking words
+    return {
+        words,
+        texts: 0,
+        timeSpentSeconds: 0,
+        speed: 0
+    };
+}
+async function getTodayStats() {
+    // Get today's word count from Supabase
+    const words = await (0, _supabaseClient.getTodayWordCount)();
+    // For now, we're only tracking words
+    return {
+        words,
+        texts: 0,
+        timeSpentSeconds: 0,
+        speed: 0
+    };
+}
+async function updateWordCount(newWords) {
+    console.log(`updateWordCount called with ${newWords} words`);
+    // Get the current counts (don't add yet, just retrieve them)
+    const existingWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+    // Get today's date in ISO format (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    const todayKey = `words_${today}`;
+    const existingTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
+    console.log(`Current stats before update - Total: ${existingWords}, Today: ${existingTodayWords}`);
+    // Log the new words to Supabase, which will also update localStorage via saveStatsLocally
+    await (0, _supabaseClient.logWordCount)(newWords);
+    // After Supabase update, get the latest counts
+    const updatedTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+    const updatedTodayWords = parseInt(localStorage.getItem(todayKey) || '0', 10);
+    console.log(`updateWordCount - Total words: ${updatedTotalWords}, Today's words: ${updatedTodayWords}`);
+    // Return the updated stats (for UI immediate feedback)
+    return {
+        words: updatedTotalWords,
+        texts: 0,
+        timeSpentSeconds: 0,
+        speed: 0
+    };
+}
+async function trackCompletedParagraph(text) {
+    const wordCount = text.trim().split(/\s+/).length;
+    // Enhanced logging for stats update
+    console.log(`Tracking paragraph completion: ${wordCount} words`);
+    // Also save the paragraph ID and word count for extra reliability
+    try {
+        const paragraphsCompletedKey = 'paragraphs_completed';
+        const paragraphsCompleted = parseInt(localStorage.getItem(paragraphsCompletedKey) || '0', 10);
+        localStorage.setItem(paragraphsCompletedKey, (paragraphsCompleted + 1).toString());
+        const paragraphWordsKey = 'paragraph_words';
+        const paragraphWords = JSON.parse(localStorage.getItem(paragraphWordsKey) || '[]');
+        const newEntry = {
+            timestamp: new Date().toISOString(),
+            words: wordCount
+        };
+        paragraphWords.push(newEntry);
+        localStorage.setItem(paragraphWordsKey, JSON.stringify(paragraphWords));
+        console.log('Saved paragraph completion to localStorage:', newEntry);
+        // Update the paragraph count display immediately
+        const totalWordsKey = 'total_words';
+        const currentTotal = parseInt(localStorage.getItem(totalWordsKey) || '0', 10);
+        const newTotal = currentTotal + wordCount;
+        localStorage.setItem(totalWordsKey, newTotal.toString());
+        console.log(`Updated total_words in localStorage immediately: ${currentTotal} -> ${newTotal}`);
+    } catch (e) {
+        console.error('Error saving paragraph data to localStorage:', e);
+    }
+    try {
+        // First update the word count in Supabase and localStorage
+        console.log('Updating word count in Supabase and localStorage...');
+        const updatedStats = await updateWordCount(wordCount);
+        // After word count update, refresh the cache in weeklyStatsService
+        try {
+            console.log('Refreshing weekly stats cache...');
+            const { getWeeklyStats } = await require("ef87c16666e59779");
+            // Force a refresh of the weekly stats by calling it with the current week offset
+            await getWeeklyStats(0);
+            console.log('Weekly stats refreshed after paragraph completion');
+        } catch (error) {
+            console.error('Failed to refresh weekly stats:', error);
+        }
+        return updatedStats;
+    } catch (error) {
+        console.error('Error in tracking paragraph completion:', error);
+        // In case of error, still return something reasonable
+        const fallbackTotalWords = parseInt(localStorage.getItem('total_words') || '0', 10);
+        return {
+            words: fallbackTotalWords,
+            texts: 0,
+            timeSpentSeconds: 0,
+            speed: 0
+        };
+    }
+}
+async function trackTimeSpent(seconds) {
+    // Currently not tracking time in Supabase
+    return getUserStats();
+}
+function calculateSpeed(words, timeInSeconds) {
+    if (timeInSeconds === 0) return 0;
+    return Math.round(words / timeInSeconds * 60); // Words per minute
+}
+async function getWeeklyStatsForChart() {
+    const weeklyData = await (0, _supabaseClient.getWeeklyStats)();
+    // Convert to DailyStats format
+    return weeklyData.map((item)=>({
+            date: item.date,
+            words: item.count,
+            texts: 0,
+            timeSpentSeconds: 0,
+            speed: 0
+        }));
+}
+
+},{"./supabaseClient":"jgwHA","ef87c16666e59779":"4G8QY","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4G8QY":[function(require,module,exports,__globalThis) {
+module.exports = Promise.resolve(module.bundle.root("2q4G4"));
+
+},{"2q4G4":"2q4G4"}],"aud5a":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$1bc4 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$1bc4.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -72813,7 +72939,7 @@ $RefreshReg$(_c, "TotalStats");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/sessionService":"9Rug3","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"6cybX":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/sessionService":"9Rug3"}],"6cybX":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$5ca7 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$5ca7.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -72932,7 +73058,7 @@ $RefreshReg$(_c, "DailyStats");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../services/sessionService":"9Rug3","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"2I4vR":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","framer-motion":"6Fwkt","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi","../services/sessionService":"9Rug3"}],"2I4vR":[function(require,module,exports,__globalThis) {
 // This service manages content fetching and tracking for paragraphs and wisdom sections
 // Types for content structure
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -73070,7 +73196,7 @@ function getDefaultContent() {
 async function completeParagraph(paragraphId) {
     // Import dependencies to avoid circular references
     const { getCurrentUserId, updateContentProgress } = await require("19d69dee685b5f02");
-    const { saveTypingSession } = await require("ac21bec1ebdafb18");
+    const { saveTypingSession, logParagraphCompletion } = await require("ac21bec1ebdafb18");
     // Get the current user ID
     const userId = getCurrentUserId();
     if (!userId) {
@@ -73097,6 +73223,8 @@ async function completeParagraph(paragraphId) {
         if (!success) console.error('Failed to update paragraph completion in database');
         else {
             console.log('Successfully marked paragraph as completed in Supabase');
+            // Log words from the paragraph completion
+            await logParagraphCompletion(paragraphContent);
             // Save the typing session to Supabase
             // For paragraph completion, we count the user having typed the full text
             await saveTypingSession(paragraphContent, paragraphContent, paragraphId, undefined // No wisdom ID for paragraphs
@@ -73174,7 +73302,7 @@ function isContentSetCompleted() {
     return allParagraphsCompleted && wisdomSectionCompleted;
 }
 
-},{"19d69dee685b5f02":"e7lNH","ac21bec1ebdafb18":"hD5tF","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"iDC1z":[function(require,module,exports,__globalThis) {
+},{"19d69dee685b5f02":"e7lNH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","ac21bec1ebdafb18":"hD5tF"}],"iDC1z":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$f472 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 $parcel$ReactRefreshHelpers$f472.init();
 var prevRefreshReg = globalThis.$RefreshReg$;
@@ -73326,6 +73454,6 @@ exports.default = withLoadingAnimation;
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["7KwkS","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:1234")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","../components/LoadingAnimation":"8jtK0","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"ktSbF":[function() {},{}]},["g0ov7","4dmnR"], "4dmnR", "parcelRequirebd52", {}, null, null, "http://localhost:5000")
 
 //# sourceMappingURL=retype_pro.6efbc4f8.js.map

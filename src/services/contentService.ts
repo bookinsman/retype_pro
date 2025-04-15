@@ -179,7 +179,7 @@ function getDefaultContent(): ContentSet {
 export async function completeParagraph(paragraphId: string): Promise<ContentSet> {
   // Import dependencies to avoid circular references
   const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
-  const { saveTypingSession } = await import('./sessionService');
+  const { saveTypingSession, logParagraphCompletion } = await import('./sessionService');
   
   // Get the current user ID
   const userId = getCurrentUserId();
@@ -214,6 +214,9 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
       console.error('Failed to update paragraph completion in database');
     } else {
       console.log('Successfully marked paragraph as completed in Supabase');
+      
+      // Log words from the paragraph completion
+      await logParagraphCompletion(paragraphContent);
       
       // Save the typing session to Supabase
       // For paragraph completion, we count the user having typed the full text
