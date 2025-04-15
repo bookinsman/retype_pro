@@ -162,6 +162,30 @@ export async function getWeeklyStats(weekOffset = 0): Promise<WeeklyStats> {
     }
     
     const { start, end } = getWeekDates(weekOffset);
+    
+    // ALWAYS check localStorage for today's data first
+    console.log(`Fetching weekly stats for week offset ${weekOffset}, date range: ${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}`);
+    
+    // First check localStorage for word counts to improve reliability
+    const localData = getLocalWordCountsByDay(userId, start, end);
+    
+    // Print daily local data for debugging
+    if (localData && localData.length > 0) {
+      const totalLocalWords = localData.reduce((sum, day) => sum + day.total_words, 0);
+      console.log(`Found local data for ${localData.length} days, total words: ${totalLocalWords}`);
+      
+      // Print each day's count for debugging
+      localData.forEach(day => {
+        console.log(`Local data for ${day.date}: ${day.total_words} words`);
+      });
+    }
+    
+    if (localData && localData.length > 0 && hasWordCounts(localData)) {
+      console.log('Using locally stored word counts for weekly stats');
+      return processStatsData(localData, weekOffset);
+    }
+    
+    // If no local data, fall back to Supabase
     const { data, error } = await supabase
       .from('user_daily_stats')
       .select('date, total_words')
@@ -185,6 +209,66 @@ export async function getWeeklyStats(weekOffset = 0): Promise<WeeklyStats> {
   } catch (e) {
     console.error('Error in getWeeklyStats:', e);
     return generateEmptyWeeklyStats(weekOffset);
+  }
+}
+
+// Helper function to check if any day has word counts
+function hasWordCounts(data: any[]): boolean {
+  return data.some(day => day.total_words > 0);
+}
+
+// Get word counts from localStorage
+function getLocalWordCountsByDay(userId: string, startDate: Date, endDate: Date): any[] {
+  try {
+    const result = [];
+    const current = new Date(startDate);
+    
+    // Check if we have any data in localStorage
+    const statsKey = `${userId}_word_stats`;
+    const statsJson = localStorage.getItem(statsKey);
+    
+    // Get today's date for special handling of current day
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Look for daily word counts saved in localStorage
+    while (current <= endDate) {
+      const dateStr = current.toISOString().split('T')[0];
+      const isToday = dateStr === today;
+      
+      // For today, use the most recent data from the 'words_DATE' key format
+      // which gets updated after each paragraph completion
+      if (isToday) {
+        const todayKey = `words_${dateStr}`;
+        const todayWords = localStorage.getItem(todayKey);
+        
+        console.log(`Checking today's local data for ${dateStr}: ${todayWords || 0} words`);
+        
+        result.push({
+          date: dateStr,
+          total_words: todayWords ? parseInt(todayWords, 10) : 0
+        });
+      } else {
+        // For past days, use the regular key format
+        const dayKey = `words_${dateStr}`;
+        const dayWords = localStorage.getItem(dayKey);
+        
+        result.push({
+          date: dateStr,
+          total_words: dayWords ? parseInt(dayWords, 10) : 0
+        });
+      }
+      
+      current.setDate(current.getDate() + 1);
+    }
+    
+    // Print daily totals for debugging
+    const totalWords = result.reduce((sum, day) => sum + day.total_words, 0);
+    console.log(`Local word counts for week: ${totalWords} total words`);
+    
+    return result;
+  } catch (e) {
+    console.error('Error getting local word counts by day:', e);
+    return [];
   }
 }
 

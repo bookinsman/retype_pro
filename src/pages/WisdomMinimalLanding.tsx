@@ -1,5 +1,5 @@
 import { Button } from "../components/ui/button";
-import { motion, useAnimation, useInView } from "framer-motion";
+import { motion, useAnimation, useInView, useScroll } from "framer-motion";
 import React, { useState, useEffect, ReactNode, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import TypeWriter from "../components/TypeWriter";
@@ -125,26 +125,39 @@ export default function WisdomMinimalLanding() {
   }, []);
 
   const handleAccess = useCallback(async () => {
-    if (!accessCode.trim()) {
+    const trimmedCode = accessCode.trim();
+    if (!trimmedCode) {
       setError("Įveskite prieigos kodą.");
       setTimeout(() => setError(""), 3000);
       return;
     }
 
+    // Basic validation - ensure it's a reasonable looking access code
+    if (trimmedCode.length < 3 || trimmedCode.length > 20) {
+      setError("Neteisingas kodo formatas. Kodas turėtų būti 3-20 simbolių ilgio.");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
     try {
-      const result = await validateAccessCode(accessCode);
+      console.log("Validating access code via Supabase:", trimmedCode);
+      
+      // Use Supabase validation function
+      const result = await validateAccessCode(trimmedCode);
       
       if (result.success) {
+        console.log("Access code validation successful");
         // Redirect to article page on success
         navigate('/article');
       } else {
         // Show error message
-        setError(result.error || "Neteisingas kodas. Bandykite dar kartą.");
+        console.log("Access code validation failed:", result.message);
+        setError(result.message || "Neteisingas kodas. Bandykite dar kartą.");
         setTimeout(() => setError(""), 3000);
       }
     } catch (error) {
       console.error('Error validating access code:', error);
-      setError("Serverio klaida. Bandykite vėliau.");
+      setError("Klaida tikrinant kodą. Bandykite dar kartą.");
       setTimeout(() => setError(""), 3000);
     }
   }, [accessCode, navigate]);
@@ -211,6 +224,22 @@ export default function WisdomMinimalLanding() {
       useGrouping: true,
     });
   }, [rewrittenCount]);
+
+  const handleStartJourney = useCallback(() => {
+    if (!accessCode.trim()) {
+      // Scroll to access section if no code entered
+      const accessSection = document.getElementById('access-section');
+      if (accessSection) {
+        accessSection.scrollIntoView({ behavior: 'smooth' });
+        setError("Įveskite prieigos kodą.");
+        setTimeout(() => setError(""), 3000);
+      }
+      return;
+    }
+
+    // Use the handleAccess function
+    handleAccess();
+  }, [accessCode]);
 
   if (!isLoaded) {
     return <LoadingAnimation fullScreen message="Kraunama..." />;
@@ -459,7 +488,7 @@ export default function WisdomMinimalLanding() {
               variant="primary"
               size="lg"
               className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-cormorant text-lg py-3 px-8"
-              onClick={() => scrollToSection("top")}
+              onClick={handleStartJourney}
             >
               Atrasti prieigą dabar
             </Button>

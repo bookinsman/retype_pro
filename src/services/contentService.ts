@@ -67,15 +67,26 @@ let currentContentSet: ContentSet | null = null;
 // Get the current content set
 export async function getCurrentContent(): Promise<ContentSet> {
   // Import Supabase client to avoid circular dependencies
-  const { fetchContentSet } = await import('./supabaseClient');
+  const { fetchContentSet, getCurrentUserId } = await import('./supabaseClient');
   
   try {
+    // Get the current user ID for better logging
+    const userId = getCurrentUserId();
+    console.log('Fetching content for user ID:', userId);
+    
     // Try to fetch from Supabase
     const content = await fetchContentSet();
     
     if (content) {
       // Update local cache for quick access
       currentContentSet = content;
+      
+      // Log progress status for debugging
+      if (content.paragraphs && content.paragraphs.length > 0) {
+        const completedCount = content.paragraphs.filter(p => p.completed).length;
+        console.log(`User progress: ${completedCount}/${content.paragraphs.length} paragraphs completed`);
+      }
+      
       return content;
     } else {
       console.error('Failed to fetch content from Supabase');
@@ -166,14 +177,33 @@ function getDefaultContent(): ContentSet {
 
 // Mark paragraph as completed
 export async function completeParagraph(paragraphId: string): Promise<ContentSet> {
-  // Import Supabase client to avoid circular dependencies
+  // Import dependencies to avoid circular references
   const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
+  const { saveTypingSession, logParagraphCompletion } = await import('./sessionService');
   
   // Get the current user ID
   const userId = getCurrentUserId();
   if (!userId) {
     console.error('User not authenticated, cannot update progress');
     throw new Error('User not authenticated');
+  }
+  
+  // Get the paragraph content from our local state
+  let paragraphContent = '';
+  if (currentContentSet) {
+    const paragraph = currentContentSet.paragraphs.find(p => p.id === paragraphId);
+    if (paragraph) {
+      paragraphContent = paragraph.content;
+    }
+  }
+  
+  // Save to localStorage for immediate feedback
+  try {
+    const localKey = `paragraph_${paragraphId}_completed`;
+    localStorage.setItem(localKey, 'true');
+    console.log(`Saved paragraph completion to localStorage: ${localKey}`);
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
   }
   
   try {
@@ -184,6 +214,20 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
       console.error('Failed to update paragraph completion in database');
     } else {
       console.log('Successfully marked paragraph as completed in Supabase');
+      
+      // Log words from the paragraph completion
+      await logParagraphCompletion(paragraphContent);
+      
+      // Save the typing session to Supabase
+      // For paragraph completion, we count the user having typed the full text
+      await saveTypingSession(
+        paragraphContent,  // Original text
+        paragraphContent,  // We consider the user to have typed the full text correctly
+        paragraphId,       // Reference to the paragraph
+        undefined          // No wisdom ID for paragraphs
+      );
+      
+      console.log('Saved typing session for paragraph completion');
     }
   } catch (error) {
     console.error('Error updating paragraph completion:', error);
@@ -205,14 +249,33 @@ export async function completeParagraph(paragraphId: string): Promise<ContentSet
 
 // Mark wisdom section as completed
 export async function completeWisdomSection(sectionId: string): Promise<ContentSet> {
-  // Import Supabase client to avoid circular dependencies
+  // Import dependencies to avoid circular references
   const { getCurrentUserId, updateContentProgress } = await import('./supabaseClient');
+  const { saveTypingSession } = await import('./sessionService');
   
   // Get the current user ID
   const userId = getCurrentUserId();
   if (!userId) {
     console.error('User not authenticated, cannot update progress');
     throw new Error('User not authenticated');
+  }
+  
+  // Get the wisdom content from our local state
+  let wisdomContent = '';
+  if (currentContentSet) {
+    const wisdom = currentContentSet.wisdomSections.find(w => w.id === sectionId);
+    if (wisdom) {
+      wisdomContent = wisdom.content;
+    }
+  }
+  
+  // Save to localStorage for immediate feedback
+  try {
+    const localKey = `wisdom_${sectionId}_completed`;
+    localStorage.setItem(localKey, 'true');
+    console.log(`Saved wisdom section completion to localStorage: ${localKey}`);
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
   }
   
   try {
@@ -223,6 +286,17 @@ export async function completeWisdomSection(sectionId: string): Promise<ContentS
       console.error('Failed to update wisdom section completion in database');
     } else {
       console.log('Successfully marked wisdom section as completed in Supabase');
+      
+      // Save the typing session to Supabase
+      // For wisdom completion, we count the user having typed the full text
+      await saveTypingSession(
+        wisdomContent,  // Original text
+        wisdomContent,  // We consider the user to have typed the full text correctly
+        undefined,      // No paragraph ID for wisdom sections
+        sectionId       // Reference to the wisdom section
+      );
+      
+      console.log('Saved typing session for wisdom section completion');
     }
   } catch (error) {
     console.error('Error updating wisdom section completion:', error);

@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { WeeklyStats, getWeeklyStats, dayNames } from '../services/weeklyStatsService';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { WeeklyStats, dayNames, DailyStats, getWeekDates } from '../services/weeklyStatsService';
+import { fetchWeeklyWordCounts } from '../services/sessionService';
 
 interface UseWeeklyStatsReturn {
   weeklyStats: WeeklyStats | null;
@@ -25,6 +26,16 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     start: null,
     end: null
   });
+  
+  // Add a cache timestamp to track when data was last fetched
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const CACHE_TIMEOUT = 2000; // 2 seconds in milliseconds
+  
+  // Use a ref to track if a fetch is in progress to prevent duplicate fetches
+  const isFetchingRef = useRef(false);
+  
+  // Use a ref for the last requested weekOffset to ensure we're getting the right data
+  const lastRequestedOffsetRef = useRef(weekOffset);
 
   // Get current month and year for display
   const getFormattedDate = useCallback(() => {
@@ -78,48 +89,148 @@ export function useWeeklyStats(): UseWeeklyStatsReturn {
     setWeekOffset(0);
   }, []);
 
-  // Fetch weekly stats data
-  const fetchWeeklyStats = useCallback(async () => {
+  // Fetch weekly stats data from our new session service
+  const fetchWeeklyStats = useCallback(async (forceRefresh = false) => {
+    // Skip if a fetch is already in progress
+    if (isFetchingRef.current) {
+      console.log('Weekly stats fetch already in progress, skipping');
+      return;
+    }
+    
+    // Skip fetching if we have recent data and not forcing refresh
+    const now = Date.now();
+    if (!forceRefresh && weeklyStats && (now - lastFetchTime < CACHE_TIMEOUT)) {
+      console.log('Using cached weekly stats data (fetched within last 2 seconds)');
+      return;
+    }
+    
+    // Mark that we're starting a fetch
+    isFetchingRef.current = true;
     setLoading(true);
+    
+    // Save the current week offset for this fetch
+    lastRequestedOffsetRef.current = weekOffset;
+    
     try {
-      const stats = await getWeeklyStats(weekOffset);
-      setWeeklyStats(stats);
+      console.log(`Fetching weekly stats with offset: ${weekOffset}${forceRefresh ? ' (forced refresh)' : ''}`);
       
-      // Set week start and end dates
-      if (stats.days.length > 0) {
-        const startDate = new Date(stats.days[0].date);
-        const endDate = new Date(stats.days[stats.days.length - 1].date);
-        setWeekDates({ start: startDate, end: endDate });
+      // Calculate date range for the specified week
+      const { start, end } = getWeekDates(weekOffset);
+      console.log(`Date range: ${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}`);
+      
+      // Fetch data from our new session service
+      const weeklyData = await fetchWeeklyWordCounts(start, end);
+      
+      // Only update state if the week offset hasn't changed during the fetch
+      if (lastRequestedOffsetRef.current === weekOffset) {
+        // Convert to the WeeklyStats format expected by the components
+        const days: DailyStats[] = weeklyData.map((day) => {
+          // Convert string date to Date object
+          const dayDate = new Date(day.date);
+          return {
+            date: dayDate, // Date object required by DailyStats interface
+            words: day.count,
+            productivityScore: day.count > 0 ? 50 : 0 // Simple score between 0-100
+          };
+        });
+        
+        // Calculate most productive day
+        let maxWords = 0;
+        let mostProductiveDayIndex = -1;
+        
+        days.forEach((day, index) => {
+          if (day.words > maxWords) {
+            maxWords = day.words;
+            mostProductiveDayIndex = index;
+          }
+        });
+        
+        // Calculate streak (consecutive days with activity)
+        const streak = calculateStreak(days, weekOffset === 0 ? getCurrentDayIndex() : 6);
+        
+        const stats: WeeklyStats = {
+          days,
+          streak,
+          mostProductiveDayIndex,
+          weekStartDate: start,
+          weekEndDate: end
+        };
+        
+        // Log the stats for debugging
+        const totalWords = stats.days.reduce((sum, day) => sum + (day.words || 0), 0);
+        console.log(`Weekly stats fetched: ${totalWords} total words, most productive day: ${mostProductiveDayIndex}`);
+        
+        setWeeklyStats(stats);
+        setLastFetchTime(now);
+        setWeekDates({ start, end });
+        setError(null);
+      } else {
+        console.log('Week offset changed during fetch, discarding results');
       }
-      
-      setError(null);
     } catch (err) {
+      console.error('Error fetching weekly stats:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch weekly stats'));
     } finally {
       setLoading(false);
+      
+      // Mark fetch as complete after a small delay to prevent immediate duplicate fetches
+      setTimeout(() => {
+        isFetchingRef.current = false;
+      }, 300);
     }
-  }, [weekOffset]);
+  }, [weekOffset, weeklyStats, lastFetchTime]);
 
-  // Function to manually refresh stats
+  // Get current day index (0 = Monday, 6 = Sunday)
+  const getCurrentDayIndex = useCallback((): number => {
+    // Convert to Monday=0, Sunday=6 format
+    return (new Date().getDay() + 6) % 7;
+  }, []);
+
+  // Calculate current streak
+  const calculateStreak = useCallback((days: DailyStats[], currentDayIndex: number): number => {
+    let streak = 0;
+    
+    // Start from current day and look backwards
+    for (let i = currentDayIndex; i >= 0; i--) {
+      if (days[i] && days[i].productivityScore > 0) {
+        streak++;
+      } else {
+        break; // Streak is broken
+      }
+    }
+    
+    return streak;
+  }, []);
+
+  // Fetch weekly stats
   const refreshStats = useCallback(() => {
-    fetchWeeklyStats();
+    console.log('Refreshing weekly stats...');
+    // Force a refresh of the data - this is called when the user completes a paragraph
+    fetchWeeklyStats(true);
   }, [fetchWeeklyStats]);
 
-  // Fetch stats on mount and when weekOffset changes
+  // Fetch data on mount and when week offset changes
   useEffect(() => {
-    let isMounted = true;
-    
-    const fetchData = async () => {
-      if (!isMounted) return;
-      await fetchWeeklyStats();
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
+    console.log(`Week offset changed to ${weekOffset}, fetching new data...`);
+    fetchWeeklyStats(false);
   }, [weekOffset, fetchWeeklyStats]);
+
+  // Listen for changes in local storage to update stats when another component updates
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key && (
+        e.key.startsWith('wordCount_') || 
+        e.key.includes('paragraph_') || 
+        e.key.includes('wisdom_')
+      )) {
+        console.log('Local storage change detected that affects word counts, refreshing stats');
+        fetchWeeklyStats(true);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [fetchWeeklyStats]);
 
   return {
     weeklyStats,
